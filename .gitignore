@@ -1,0 +1,8 @@
+# Mac OS X Files
+.DS_Store
+
+# Environment
+.env
+
+# Vendor Packages
+vendor/
