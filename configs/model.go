@@ -1,16 +1,17 @@
 package configs
 
 type Config struct {
-	Line LineConfig
-	Wit	WitConfig
+	Chat        ChatConfig
+	Interpretor InterpretorConfig
+	Port        string
 }
 
-type LineConfig struct {
+type ChatConfig struct {
 	ChannelAccessToken string
-	ChannelSecret string
-	MasterID string //ID of master user
+	ChannelSecret      string
+	MasterID           string //ID of master user
 }
 
-type WitConfig struct {
+type InterpretorConfig struct {
 	Token string
 }

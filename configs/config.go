@@ -5,14 +5,15 @@ import "os"
 // New function returns a new config function filled with environment variables.
 func New() *Config {
 	return &Config{
-		Line: LineConfig{
+		Chat: ChatConfig{
 			MasterID:           getEnv("MASTER_ID", ""),
 			ChannelAccessToken: getEnv("ACCESS_TOKEN", ""),
 			ChannelSecret:      getEnv("CHANNEL_SECRET", ""),
 		},
-		Wit: WitConfig{
+		Interpretor: InterpretorConfig{
 			Token: getEnv("WIT_TOKEN_KEY", ""),
 		},
+		Port: getEnv("PORT", "8080"),
 	}
 }
 
