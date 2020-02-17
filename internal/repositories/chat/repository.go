@@ -7,23 +7,27 @@ import (
 	"net/http"
 
 	"github.com/Rocksus/pogo/configs"
+	"github.com/Rocksus/pogo/internal/repositories/interpretor"
 	"github.com/line/line-bot-sdk-go/linebot"
 )
 
 type Repository interface {
-	InitClient() error
+	initClient() error
 	GetHandler(ctx context.Context) func(w http.ResponseWriter, req *http.Request)
 }
 
-func InitChatRepository(config configs.ChatConfig) Repository {
-	return &lineRepo{
+func InitChatRepository(config configs.ChatConfig, interpretor interpretor.Interpretor) Repository {
+	newRepo := &lineRepo{
 		MasterID:           config.MasterID,
 		ChannelAccessToken: config.ChannelAccessToken,
 		ChannelSecret:      config.ChannelSecret,
+		Interpretor:        interpretor,
 	}
+	newRepo.initClient()
+	return newRepo
 }
 
-func (l *lineRepo) InitClient() error {
+func (l *lineRepo) initClient() error {
 	if l.Client != nil {
 		return nil
 	}

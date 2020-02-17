@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/Rocksus/pogo/internal/repositories/chat"
+	"github.com/Rocksus/pogo/internal/repositories/interpretor"
 
 	"github.com/Rocksus/pogo/configs"
 	"github.com/joho/godotenv"
@@ -22,7 +23,9 @@ func init() {
 func main() {
 	config := configs.New()
 
-	chatbot := chat.InitChatRepository(config.Chat)
+	interpretor := interpretor.InitInterpretorRepository(config.Interpretor)
+
+	chatbot := chat.InitChatRepository(config.Chat, interpretor)
 
 	http.HandleFunc("/callback", chatbot.GetHandler(context.Background()))
 
