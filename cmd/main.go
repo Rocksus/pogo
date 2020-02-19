@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 
@@ -27,7 +26,7 @@ func main() {
 
 	chatbot := chat.InitChatRepository(config.Chat, interpretor)
 
-	http.HandleFunc("/callback", chatbot.GetHandler(context.Background()))
+	http.HandleFunc("/callback", chatbot.GetHandler())
 
 	if err := http.ListenAndServe(":"+config.Port, nil); err != nil {
 		log.Fatalf("[Init]Fail to start serving port %s, err: %v", config.Port, err)
