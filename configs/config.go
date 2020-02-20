@@ -13,7 +13,9 @@ func New() *Config {
 		Interpretor: InterpretorConfig{
 			Token: getEnv("WIT_TOKEN_KEY", ""),
 		},
-		Port: getEnv("PORT", "8080"),
+		Port:     getEnv("PORT", "8080"),
+		CertFile: getEnv("CERT_FILE", "https-server.crt"),
+		KeyFile:  getEnv("KEY_FILE", "https-server.key"),
 	}
 }
 

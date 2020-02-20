@@ -3,6 +3,8 @@
 
 # Environment
 .env
+https-server.crt
+https-server.key
 
 # Vendor Packages
 vendor/

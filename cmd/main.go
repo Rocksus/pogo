@@ -28,7 +28,8 @@ func main() {
 
 	http.HandleFunc("/callback", chatbot.GetHandler())
 
-	if err := http.ListenAndServe(":"+config.Port, nil); err != nil {
+	log.Printf("Listening on port %s\n", config.Port)
+	if err := http.ListenAndServeTLS(":"+config.Port, config.CertFile, config.KeyFile, nil); err != nil {
 		log.Fatalf("[Init]Fail to start serving port %s, err: %v", config.Port, err)
 	}
 }

@@ -4,6 +4,8 @@ type Config struct {
 	Chat        ChatConfig
 	Interpretor InterpretorConfig
 	Port        string
+	CertFile    string
+	KeyFile     string
 }
 
 type ChatConfig struct {

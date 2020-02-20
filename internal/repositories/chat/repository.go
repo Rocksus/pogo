@@ -23,7 +23,11 @@ func InitChatRepository(config configs.ChatConfig, interpretor interpretor.Inter
 		ChannelSecret:      config.ChannelSecret,
 		Interpretor:        interpretor,
 	}
-	newRepo.initClient()
+	err := newRepo.initClient()
+	if err != nil {
+		log.Fatalf("[Init Chat] Failed to initialize chat repository, err: %s", err.Error())
+	}
+	log.Print("[Init Chat] Successfully initialized chat repository.")
 	return newRepo
 }
 
