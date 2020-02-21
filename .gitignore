@@ -3,6 +3,7 @@
 
 # Environment
 .env
+cmd.exe
 https-server.crt
 https-server.key
 

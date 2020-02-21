@@ -69,8 +69,6 @@ func (l *lineRepo) GetHandler() func(w http.ResponseWriter, req *http.Request) {
 						log.Print(err)
 						l.replyDefaultMessage(event.ReplyToken)
 					}
-					fmt.Println(data.Intent)
-					fmt.Println(data)
 					switch data.Intent {
 
 					}
