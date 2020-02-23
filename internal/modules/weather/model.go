@@ -1,10 +1,16 @@
 package weather
 
+const (
+	weatherURL = "http://openweathermap.org/data/2.5/weather?q="
+)
+
 type weatherRepo struct {
 	APIKey string
 }
 
 type Data struct {
+	Response      int                  `json:"cod"`
+	Message       string               `json:"message"`
 	Coord         Coord                `json:"coord"`
 	Weather       []WeatherDescription `json:"weather"`
 	Details       WeatherData          `json:"main"`
