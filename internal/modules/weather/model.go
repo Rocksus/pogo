@@ -1,5 +1,9 @@
 package weather
 
+type weatherRepo struct {
+	APIKey string
+}
+
 type Data struct {
 	Coord         Coord                `json:"coord"`
 	Weather       []WeatherDescription `json:"weather"`

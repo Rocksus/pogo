@@ -6,6 +6,7 @@ type Config struct {
 	Port        string
 	CertFile    string
 	KeyFile     string
+	Weather     WeatherConfig
 }
 
 type ChatConfig struct {
@@ -16,4 +17,8 @@ type ChatConfig struct {
 
 type InterpretorConfig struct {
 	Token string
+}
+
+type WeatherConfig struct {
+	APIKey string
 }

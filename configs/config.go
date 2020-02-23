@@ -16,6 +16,9 @@ func New() *Config {
 		Port:     getEnv("PORT", "8080"),
 		CertFile: getEnv("CERT_FILE", "https-server.crt"),
 		KeyFile:  getEnv("KEY_FILE", "https-server.key"),
+		Weather: WeatherConfig{
+			APIKey: getEnv("WEATHER_API_KEY", ""),
+		},
 	}
 }
 
