@@ -3,8 +3,8 @@ package weather
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -17,7 +17,7 @@ type Repository interface {
 }
 
 func (w *weatherRepo) testAPI() error {
-	requestURL := fmt.Sprintf("%s%s%s", weatherURL)
+	requestURL := fmt.Sprintf("%sid=%d&APPID=%s", weatherURL, jakartaLocationID, w.APIKey)
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
 		return fmt.Errorf("Module Internal Error, %s", err.Error())
@@ -53,8 +53,9 @@ func Init(config configs.WeatherConfig) error {
 	}
 	err := newRepo.testAPI()
 	if err != nil {
-		return errors.New(fmt.Sprintf("[Weather][Init] Error initalizing the weather module, err: %s"), err.Error())
+		return fmt.Errorf("[Weather][Init] Error initalizing the weather module, err: %s", err.Error())
 	}
+	log.Print("[Weather][Init] Weather module initialized successfully.")
 	def = newRepo
 	return nil
 }

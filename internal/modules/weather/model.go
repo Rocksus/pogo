@@ -1,7 +1,10 @@
 package weather
 
 const (
-	weatherURL = "http://openweathermap.org/data/2.5/weather?q="
+	weatherURL          = "http://api.openweathermap.org/data/2.5/weather?"
+	jakartaLocationID   = 1642907
+	tangerangLocationID = 1625084
+	bantenLocationID    = 1923045
 )
 
 type weatherRepo struct {
