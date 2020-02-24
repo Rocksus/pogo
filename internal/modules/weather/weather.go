@@ -59,7 +59,7 @@ func Init(config configs.WeatherConfig) error {
 	newRepo := &weatherRepo{
 		APIKey: config.APIKey,
 	}
-	_, err := newRepo.QueryLocation(jakartaLocationID)
+	_, err := newRepo.QueryLocation(locationIDs["jakarta"])
 	if err != nil {
 		return fmt.Errorf("[Weather][Init] Error initalizing the weather module, err: %s", err.Error())
 	}

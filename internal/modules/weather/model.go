@@ -1,11 +1,14 @@
 package weather
 
 const (
-	weatherURL          = "http://api.openweathermap.org/data/2.5/weather?"
-	jakartaLocationID   = 1642907
-	tangerangLocationID = 1625084
-	bantenLocationID    = 1923045
+	weatherURL = "http://api.openweathermap.org/data/2.5/weather?"
 )
+
+var locationIDs = map[string]int64{
+	"jakarta":   1642907,
+	"tangerang": 1625084,
+	"banten":    1923045,
+}
 
 type weatherRepo struct {
 	APIKey string
