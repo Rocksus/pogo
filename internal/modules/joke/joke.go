@@ -48,7 +48,7 @@ func (j *jokeRepo) GetRandomJoke() (Data, error) {
 		return data, fmt.Errorf("Module Internal Error, %s", err.Error())
 	}
 	if data.Response != 200 {
-		return data, fmt.Errorf("API Error, %s", data.Message)
+		return data, fmt.Errorf("API Error, %s", data.Error)
 	}
 
 	return data, nil
@@ -80,7 +80,7 @@ func (j *jokeRepo) GetRandomJokeByCategory(category string) (Data, error) {
 		return data, fmt.Errorf("Module Internal Error, %s", err.Error())
 	}
 	if data.Response != 200 {
-		return data, fmt.Errorf("API Error, %s", data.Message)
+		return data, fmt.Errorf("API Error, %s", data.Error)
 	}
 
 	return data, nil
@@ -112,7 +112,7 @@ func (j *jokeRepo) GetJokeByID(id int64) (Data, error) {
 		return data, fmt.Errorf("Module Internal Error, %s", err.Error())
 	}
 	if data.Response != 200 {
-		return data, fmt.Errorf("API Error, %s", data.Message)
+		return data, fmt.Errorf("API Error, %s", data.Error)
 	}
 
 	return data, nil

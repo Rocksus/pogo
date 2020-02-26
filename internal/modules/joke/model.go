@@ -11,6 +11,8 @@ type Data struct {
 	Setup     string `json:"setup"`
 	Punchline string `json:"punchline"`
 	Language  string `json:"lang"`
+	Response  int    `json:"status"`
+	Error     string `json:"error"`
 }
 
 type jokeRepo struct {

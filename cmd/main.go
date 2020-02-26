@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Rocksus/pogo/internal/modules/joke"
 	"github.com/Rocksus/pogo/internal/modules/weather"
 	"github.com/Rocksus/pogo/internal/repositories/chat"
 	"github.com/Rocksus/pogo/internal/repositories/interpretor"
@@ -26,6 +27,7 @@ func main() {
 	config := configs.New()
 
 	weather.Init(config.Weather)
+	joke.Init()
 
 	interpretor := interpretor.InitInterpretorRepository(config.Interpretor)
 
