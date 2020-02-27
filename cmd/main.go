@@ -27,6 +27,7 @@ func main() {
 	config := configs.New()
 
 	weather.Init(config.Weather)
+	news.Init(config.News)
 	joke.Init()
 
 	interpretor := interpretor.InitInterpretorRepository(config.Interpretor)

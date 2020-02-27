@@ -7,6 +7,7 @@ type Config struct {
 	CertFile    string
 	KeyFile     string
 	Weather     WeatherConfig
+	News        NewsConfig
 }
 
 type ChatConfig struct {
@@ -20,5 +21,9 @@ type InterpretorConfig struct {
 }
 
 type WeatherConfig struct {
+	APIKey string
+}
+
+type NewsConfig struct {
 	APIKey string
 }

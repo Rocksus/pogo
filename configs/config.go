@@ -19,6 +19,9 @@ func New() *Config {
 		Weather: WeatherConfig{
 			APIKey: getEnv("WEATHER_API_KEY", ""),
 		},
+		News: NewsConfig{
+			APIKey: getEnv("NEWS_API_KEY", ""),
+		},
 	}
 }
 
