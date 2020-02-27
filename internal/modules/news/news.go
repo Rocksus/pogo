@@ -1,6 +1,10 @@
 package gnews
 
-import "github.com/Rocksus/pogo/configs"
+import (
+	"fmt"
+
+	"github.com/Rocksus/pogo/configs"
+)
 
 var def Repository
 
@@ -18,13 +22,13 @@ func Init(config configs.NewsConfig) error {
 }
 
 func (n *newsRepo) GetNewsByKeyword(parameter map[string]interface{}) (Data, error) {
-
+	requestURL := fmt.Sprintf("%s/search?", apiURL)
 }
 
 func (n *newsRepo) GetTopNews(parameter map[string]interface{}) (Data, error) {
-
+	requestURL := fmt.Sprintf("%s/top-news?token=%s", n.APIKey)
 }
 
 func (n *newsRepo) GetNewsByTopic(parameter map[string]interface{}) (Data, error) {
-
+	requestURL := fmt.Sprintf("%s/topics/%s?token=%s", apiURL, "topic", n.APIKey)
 }
