@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -23,6 +24,7 @@ func Init(config configs.NewsConfig) error {
 	def = &newsRepo{
 		APIKey: config.APIKey,
 	}
+	log.Print("[News][Init] News moudle initialized successfully.")
 	return nil
 }
 
@@ -62,12 +64,12 @@ func (n *newsRepo) GetNewsByKeyword(parameter NewsSearchRequestParam) (Data, err
 	}
 	u.RawQuery = q.Encode()
 
-	req, err := http.NewRequest("GET", requestURL, nil)
+	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return data, fmt.Errorf("[News][GetNewsByKeyword] Module Internal Error, %s", err.Error())
 	}
 	client := &http.Client{}
-	rctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+	rctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
 	req = req.WithContext(rctx)
@@ -109,12 +111,12 @@ func (n *newsRepo) GetTopNews(parameter TopNewsRequestParam) (Data, error) {
 	}
 	u.RawQuery = q.Encode()
 
-	req, err := http.NewRequest("GET", requestURL, nil)
+	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return data, fmt.Errorf("[News][GetTopNews] Module Internal Error, %s", err.Error())
 	}
 	client := &http.Client{}
-	rctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+	rctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
 	req = req.WithContext(rctx)
@@ -159,12 +161,12 @@ func (n *newsRepo) GetNewsByTopic(parameter NewsTopicRequestParam) (Data, error)
 	}
 	u.RawQuery = q.Encode()
 
-	req, err := http.NewRequest("GET", requestURL, nil)
+	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return data, fmt.Errorf("[News][GetNewsByTopic] Module Internal Error, %s", err.Error())
 	}
 	client := &http.Client{}
-	rctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+	rctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
 	req = req.WithContext(rctx)
@@ -181,4 +183,16 @@ func (n *newsRepo) GetNewsByTopic(parameter NewsTopicRequestParam) (Data, error)
 	}
 
 	return data, nil
+}
+
+func GetNewsByKeyword(parameter NewsSearchRequestParam) (Data, error) {
+	return def.GetNewsByKeyword(parameter)
+}
+
+func GetTopNews(parameter TopNewsRequestParam) (Data, error) {
+	return def.GetTopNews(parameter)
+}
+
+func GetNewsByTopic(parameter NewsTopicRequestParam) (Data, error) {
+	return def.GetNewsByTopic(parameter)
 }
