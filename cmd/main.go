@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Rocksus/pogo/internal/modules/joke"
+	"github.com/Rocksus/pogo/internal/modules/news"
 	"github.com/Rocksus/pogo/internal/modules/weather"
 	"github.com/Rocksus/pogo/internal/repositories/chat"
 	"github.com/Rocksus/pogo/internal/repositories/interpretor"
