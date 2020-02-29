@@ -1,6 +1,8 @@
 package configs
 
-import "os"
+import (
+	"os"
+)
 
 // New function returns a new config function filled with environment variables.
 func New() *Config {

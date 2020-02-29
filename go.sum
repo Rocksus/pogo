@@ -2,5 +2,7 @@ github.com/joho/godotenv v1.3.0 h1:Zjp+RcGpHhGlrMbJzXTrZZPrWj+1vfm90La1wgB6Bhc=
 github.com/joho/godotenv v1.3.0/go.mod h1:7hK45KPybAkOC6peb+G5yklZfMxEjkZhHbwpqxOKXbg=
 github.com/line/line-bot-sdk-go v7.1.0+incompatible h1:HiIhyTO0cuZFKpIu1DoOHvG7Sdjli4oA9NlOVYZOnJQ=
 github.com/line/line-bot-sdk-go v7.1.0+incompatible/go.mod h1:0RjLjJEAU/3GIcHkC3av6O4jInAbt25nnZVmOFUgDBg=
+github.com/robfig/cron/v3 v3.0.0 h1:kQ6Cb7aHOHTSzNVNEhmp8EcWKLb4CbiMW9h9VyIhO4E=
+github.com/robfig/cron/v3 v3.0.0/go.mod h1:eQICP3HwyT7UooqI/z+Ov+PtYAWygg1TEWWzGIFLtro=
 github.com/wit-ai/wit-go v1.0.8 h1:OlEnJbR7Ae/VOQs2Tmj+VtgZOCtuWSLZgGYzeSrzMXY=
 github.com/wit-ai/wit-go v1.0.8/go.mod h1:WUgVBUtWT9AOYmTcR8paN36cTe4SseLk6Y6grvnGVFw=

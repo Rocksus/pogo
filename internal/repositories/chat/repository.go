@@ -13,6 +13,7 @@ import (
 type Repository interface {
 	initClient() error
 	GetHandler() func(w http.ResponseWriter, req *http.Request)
+	SendDailyMessage()
 	replyDefaultMessage(replyToken string)
 }
 
@@ -84,5 +85,17 @@ func (l *lineRepo) GetHandler() func(w http.ResponseWriter, req *http.Request) {
 				}
 			}
 		}
+	}
+}
+
+func (l *lineRepo) SendDailyMessage() {
+	var messages []linebot.SendingMessage
+
+	// TODO: add weather, news, joke
+	// TODO: next phase: add todo
+
+	_, err := l.Client.PushMessage(l.MasterID, messages...).Do()
+	if err != nil {
+		// Do something when some bad happened
 	}
 }
