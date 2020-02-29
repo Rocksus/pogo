@@ -5,6 +5,10 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Rocksus/pogo/internal/modules/joke"
+	"github.com/Rocksus/pogo/internal/modules/news"
+	"github.com/Rocksus/pogo/internal/modules/weather"
+
 	"github.com/Rocksus/pogo/configs"
 	"github.com/Rocksus/pogo/internal/repositories/interpretor"
 	"github.com/line/line-bot-sdk-go/linebot"
@@ -91,7 +95,18 @@ func (l *lineRepo) GetHandler() func(w http.ResponseWriter, req *http.Request) {
 func (l *lineRepo) SendDailyMessage() {
 	var messages []linebot.SendingMessage
 
-	// TODO: add weather, news, joke
+	jokeData, err := joke.GetRandomJoke()
+	if err != nil {
+		log.Printf("[Chat Cron][SendDailyMessage] Failed to get joke data, err: %s", err.Error())
+	}
+	weatherData, err := weather.QueryLocation("jakarta")
+	if err != nil {
+		log.Printf("[Chat Cron][SendDailyMessage] Failed to get weather data, err: %s", err.Error())
+	}
+	newsData, err := news.GetTopNews(news.TopNewsRequestParam{})
+	if err != nil {
+		log.Printf("[Chat Cron][SendDailyMessage] Failed to get news data, err: %s", err.Error())
+	}
 	// TODO: next phase: add todo
 
 	_, err := l.Client.PushMessage(l.MasterID, messages...).Do()

@@ -15,12 +15,16 @@ var def Repository
 
 // Repository holds the package module's available functions
 type Repository interface {
-	QueryLocation(locationID int64) (Data, error)
+	QueryLocation(location string) (Data, error)
 }
 
 // QueryLocation gets the weather data of a city based on locationID
-func (w *weatherRepo) QueryLocation(locationID int64) (Data, error) {
+func (w *weatherRepo) QueryLocation(location string) (Data, error) {
 	var data Data
+	locationID, ok := locationIDs[location]
+	if !ok {
+		return data, fmt.Errorf("Invalid location string")
+	}
 	requestURL := fmt.Sprintf("%sid=%d&APPID=%s", weatherURL, locationID, w.APIKey)
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
@@ -50,8 +54,8 @@ func (w *weatherRepo) QueryLocation(locationID int64) (Data, error) {
 }
 
 // QueryLocation is the global level of the function
-func QueryLocation(locationID int64) (Data, error) {
-	return def.QueryLocation(locationID)
+func QueryLocation(location string) (Data, error) {
+	return def.QueryLocation(location)
 }
 
 // Init sets up the default variable to handle package functions
@@ -59,7 +63,7 @@ func Init(config configs.WeatherConfig) error {
 	newRepo := &weatherRepo{
 		APIKey: config.APIKey,
 	}
-	_, err := newRepo.QueryLocation(locationIDs["jakarta"])
+	_, err := newRepo.QueryLocation("jakarta")
 	if err != nil {
 		return fmt.Errorf("[Weather][Init] Error initalizing the weather module, err: %s", err.Error())
 	}
