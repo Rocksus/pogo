@@ -50,6 +50,8 @@ func (w *weatherRepo) QueryLocation(location string) (Data, error) {
 		return data, fmt.Errorf("API Error, %s", data.Message)
 	}
 
+	data.Details.TemperatureCelcius = kelvinToCelcius(data.Details.TemperatureKelvin)
+
 	return data, nil
 }
 

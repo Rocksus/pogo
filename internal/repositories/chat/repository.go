@@ -10,6 +10,7 @@ import (
 	"github.com/Rocksus/pogo/internal/modules/joke"
 	"github.com/Rocksus/pogo/internal/modules/news"
 	"github.com/Rocksus/pogo/internal/modules/weather"
+	"github.com/Rocksus/pogo/internal/utils/stringformat"
 
 	"github.com/Rocksus/pogo/configs"
 	"github.com/Rocksus/pogo/internal/repositories/interpretor"
@@ -150,9 +151,9 @@ func (l *lineRepo) SendDailyMessage(userID string) {
 		userName = userData.DisplayName
 	}
 
-	messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("Hello %s, here are your daily stuffs", userName)))
+	messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("Hello %s, here are your daily stuffs", stringformat.GetFirstWord(userName))))
 	if weatherExist {
-		messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("Here's your daily weather update,\n\n%s, %s is\n%s\nHumidity: %d\nTemperature: %f degrees C", weatherData.Name, weatherData.System.Country, weatherData.Weather[0].Description, weatherData.Details.Humidity, weatherData.Details.Temperature)))
+		messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("Here's your daily weather update,\n\n%s, %s:\n%s\nHumidity: %d\nTemperature: %.2f degrees C", weatherData.Name, weatherData.System.Country, weatherData.Weather[0].Description, weatherData.Details.Humidity, weatherData.Details.TemperatureCelcius)))
 	}
 	if jokeExist {
 		messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("%s\n\n%s", jokeData.Setup, jokeData.Punchline)))

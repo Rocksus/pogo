@@ -43,11 +43,12 @@ type WeatherDescription struct {
 }
 
 type WeatherData struct {
-	Temperature float64 `json:"temp"` // Default temperature is in Kelvin. Convert using kelvinToCelcius()
-	Pressure    int64   `json:"pressure"`
-	Humidity    int64   `json:"humidity"`
-	MinTemp     float64 `json:"temp_min"`
-	MaxTemp     float64 `json:"temp_max"`
+	TemperatureKelvin  float64 `json:"temp"`
+	TemperatureCelcius float64
+	Pressure           int64   `json:"pressure"`
+	Humidity           int64   `json:"humidity"`
+	MinTemp            float64 `json:"temp_min"`
+	MaxTemp            float64 `json:"temp_max"`
 }
 
 type WindData struct {
