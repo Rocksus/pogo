@@ -37,7 +37,7 @@ func main() {
 	handler := logging.Middleware(chatbot.GetHandler())
 
 	http.HandleFunc("/callback", handler)
-	chatbot.SendDailyMessage(config.Chat.MasterID)
+
 	srv := &http.Server{
 		Handler:      http.DefaultServeMux,
 		Addr:         ":" + config.Port,
