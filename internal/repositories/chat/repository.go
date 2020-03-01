@@ -1,9 +1,11 @@
 package chat
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/Rocksus/pogo/internal/modules/joke"
 	"github.com/Rocksus/pogo/internal/modules/news"
@@ -19,6 +21,7 @@ type Repository interface {
 	GetHandler() func(w http.ResponseWriter, req *http.Request)
 	SendDailyMessage()
 	replyDefaultMessage(replyToken string)
+	GetUserProfile(userID string) (*UserData, error)
 }
 
 func InitChatRepository(config configs.ChatConfig, interpretor interpretor.Interpretor) Repository {
@@ -77,7 +80,10 @@ func (l *lineRepo) GetHandler() func(w http.ResponseWriter, req *http.Request) {
 					switch data.Intent {
 
 					}
-					if _, err = l.Client.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(message.Text)).Do(); err != nil {
+
+					rctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+					defer cancel()
+					if _, err = l.Client.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(message.Text)).WithContext(rctx).Do(); err != nil {
 						log.Print(err)
 					}
 				case *linebot.StickerMessage:
@@ -92,8 +98,30 @@ func (l *lineRepo) GetHandler() func(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func (l *lineRepo) GetUserProfile(userID string) (*UserData, error) {
+	if userID == "" {
+		return nil, fmt.Errorf("[Chat][GetUserProfile] UserID can't be empty")
+	}
+
+	rctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+	defer cancel()
+
+	userData, err := l.Client.GetProfile(userID).WithContext(rctx).Do()
+	if err != nil {
+		return nil, fmt.Errorf("[Chat][GetUserProfile] Can't get user profile, err: %s", err.Error())
+	}
+
+	return &UserData{
+		UserID:        userData.UserID,
+		DisplayName:   userData.DisplayName,
+		PictureURL:    userData.PictureURL,
+		StatusMessage: userData.StatusMessage,
+	}, nil
+}
+
 func (l *lineRepo) SendDailyMessage() {
 	var messages []linebot.SendingMessage
+	messages = make([]linebot.SendingMessage, 3)
 
 	jokeData, err := joke.GetRandomJoke()
 	if err != nil {
@@ -107,10 +135,13 @@ func (l *lineRepo) SendDailyMessage() {
 	if err != nil {
 		log.Printf("[Chat Cron][SendDailyMessage] Failed to get news data, err: %s", err.Error())
 	}
-	// TODO: next phase: add todo
 
-	_, err := l.Client.PushMessage(l.MasterID, messages...).Do()
+	messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("Hello %s, here are your daily stuffs")))
+	messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("Weather data")))
+	messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("%s\n\n%s", jokeData.Setup, jokeData.Punchline)))
+
+	_, err = l.Client.PushMessage(l.MasterID, messages...).Do()
 	if err != nil {
-		// Do something when some bad happened
+		log.Printf("[Chat Cron][SendDailyMessage] Failed to send message, err: %s", err.Error())
 	}
 }

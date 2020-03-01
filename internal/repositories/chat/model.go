@@ -12,3 +12,10 @@ type lineRepo struct {
 	Client             *linebot.Client
 	Interpretor        interpretor.Interpretor
 }
+
+type UserData struct {
+	UserID        string `json:"userId"`
+	DisplayName   string `json:"displayName"`
+	PictureURL    string `json:"pictureUrl"`
+	StatusMessage string `json:"statusMessage"`
+}
