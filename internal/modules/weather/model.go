@@ -27,6 +27,7 @@ type Data struct {
 	CityID        int64                `json:"id"`
 	Name          string               `json:"name"`
 	Timezone      int64                `json:"timezone"`
+	System        SystemData           `json:"sys"`
 }
 
 type Coord struct {

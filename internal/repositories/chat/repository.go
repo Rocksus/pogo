@@ -19,7 +19,7 @@ import (
 type Repository interface {
 	initClient() error
 	GetHandler() func(w http.ResponseWriter, req *http.Request)
-	SendDailyMessage()
+	SendDailyMessage(userID string)
 	replyDefaultMessage(replyToken string)
 	GetUserProfile(userID string) (*UserData, error)
 }
@@ -119,28 +119,56 @@ func (l *lineRepo) GetUserProfile(userID string) (*UserData, error) {
 	}, nil
 }
 
-func (l *lineRepo) SendDailyMessage() {
+func (l *lineRepo) SendDailyMessage(userID string) {
 	var messages []linebot.SendingMessage
-	messages = make([]linebot.SendingMessage, 3)
+	messages = make([]linebot.SendingMessage, 0, 3)
+	jokeExist := true
+	weatherExist := true
+	newsExist := true
+	userName := "User"
 
 	jokeData, err := joke.GetRandomJoke()
 	if err != nil {
+		jokeExist = false
 		log.Printf("[Chat Cron][SendDailyMessage] Failed to get joke data, err: %s", err.Error())
 	}
 	weatherData, err := weather.QueryLocation("jakarta")
 	if err != nil {
+		weatherExist = false
 		log.Printf("[Chat Cron][SendDailyMessage] Failed to get weather data, err: %s", err.Error())
 	}
-	newsData, err := news.GetTopNews(news.TopNewsRequestParam{})
+	newsData, err := news.GetTopNews(news.TopNewsRequestParam{Max: 3})
 	if err != nil {
+		newsExist = false
 		log.Printf("[Chat Cron][SendDailyMessage] Failed to get news data, err: %s", err.Error())
 	}
+	userData, err := l.GetUserProfile(userID)
+	if err != nil {
+		log.Printf("[Chat Cron][SendDailyMessage] Failed to get user data, err: %s", err.Error())
+		userName = "User"
+	} else {
+		userName = userData.DisplayName
+	}
 
-	messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("Hello %s, here are your daily stuffs")))
-	messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("Weather data")))
-	messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("%s\n\n%s", jokeData.Setup, jokeData.Punchline)))
+	messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("Hello %s, here are your daily stuffs", userName)))
+	if weatherExist {
+		messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("Here's your daily weather update,\n\n%s, %s is\n%s\nHumidity: %d\nTemperature: %f degrees C", weatherData.Name, weatherData.System.Country, weatherData.Weather[0].Description, weatherData.Details.Humidity, weatherData.Details.Temperature)))
+	}
+	if jokeExist {
+		messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("%s\n\n%s", jokeData.Setup, jokeData.Punchline)))
+	}
+	if newsExist {
+		newsText := fmt.Sprintf("Top news for today:\n")
+		for _, v := range newsData.Articles {
+			newsText = fmt.Sprintf("%s\n%s: %s\n%s", newsText, v.Source.Name, v.Title, v.URL)
+		}
+		messages = append(messages, linebot.NewTextMessage(newsText))
+	}
 
-	_, err = l.Client.PushMessage(l.MasterID, messages...).Do()
+	rctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+	_, err = l.Client.PushMessage(userID, messages...).WithContext(rctx).Do()
 	if err != nil {
 		log.Printf("[Chat Cron][SendDailyMessage] Failed to send message, err: %s", err.Error())
 	}
