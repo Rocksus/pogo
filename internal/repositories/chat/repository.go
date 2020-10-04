@@ -18,10 +18,8 @@ import (
 )
 
 type Repository interface {
-	initClient() error
 	GetHandler() func(w http.ResponseWriter, req *http.Request)
 	SendDailyMessage(userID string)
-	replyDefaultMessage(replyToken string)
 	GetUserProfile(userID string) (*UserData, error)
 }
 
