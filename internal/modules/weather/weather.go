@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/Rocksus/pogo/configs"
+	"github.com/nickylogan/go-log"
 )
 
 var def Repository
@@ -69,7 +69,7 @@ func Init(config configs.WeatherConfig) error {
 	if err != nil {
 		return fmt.Errorf("[Weather][Init] Error initalizing the weather module, err: %s", err.Error())
 	}
-	log.Print("[Weather][Init] Weather module initialized successfully.")
+	log.Infoln("Weather module initialized successfully.")
 	def = newRepo
 	return nil
 }

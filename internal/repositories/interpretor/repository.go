@@ -1,9 +1,8 @@
 package interpretor
 
 import (
-	"fmt"
-
 	"github.com/Rocksus/pogo/configs"
+	"github.com/nickylogan/go-log"
 	witai "github.com/wit-ai/wit-go"
 )
 
@@ -30,7 +29,7 @@ func (i *interpretor) InterpretText(text string) (*InterpretorResponse, error) {
 		Text:     msg.Text,
 		Entities: msg.Entities,
 	}
-	fmt.Println(msg.Entities)
+	log.Debugln(msg.Entities)
 
 	return resp, nil
 }

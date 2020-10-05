@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"time"
 
 	"github.com/Rocksus/pogo/configs"
+	"github.com/nickylogan/go-log"
 )
 
 var def Repository
@@ -24,7 +24,7 @@ func Init(config configs.NewsConfig) error {
 	def = &newsRepo{
 		APIKey: config.APIKey,
 	}
-	log.Print("[News][Init] News moudle initialized successfully.")
+	log.Infoln("News module initialized successfully.")
 	return nil
 }
 

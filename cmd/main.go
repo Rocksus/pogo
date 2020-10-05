@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -11,20 +10,21 @@ import (
 	"github.com/Rocksus/pogo/internal/repositories/chat"
 	"github.com/Rocksus/pogo/internal/repositories/interpretor"
 	"github.com/Rocksus/pogo/internal/utils/logging"
+	"github.com/nickylogan/go-log"
 
 	"github.com/Rocksus/pogo/configs"
 	"github.com/joho/godotenv"
 )
 
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("[init cmd] environment file not found.")
-	} else {
-		log.Print("[init cmd] successfully loaded environment files.")
-	}
-}
-
 func main() {
+	log.Init(log.WithLevel(log.DebugLevel))
+
+	if err := godotenv.Load(); err != nil {
+		log.Fatalln("environment file not found")
+	}
+
+	log.Infoln("successfully loaded environment files")
+
 	config := configs.New()
 
 	weather.Init(config.Weather)
@@ -45,8 +45,8 @@ func main() {
 		ReadTimeout:  5 * time.Second,
 	}
 
-	log.Printf("Listening on port %s\n", config.Port)
+	log.Infof("Listening on port %s", config.Port)
 	if err := srv.ListenAndServe(); err != nil {
-		log.Fatalf("[Init]Fail to start serving port %s, err: %v", config.Port, err)
+		log.WithError(err).Fatalf("Failed to start serving port %s", config.Port)
 	}
 }

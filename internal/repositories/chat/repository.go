@@ -3,7 +3,6 @@ package chat
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/Rocksus/pogo/internal/modules/news"
 	"github.com/Rocksus/pogo/internal/modules/weather"
 	"github.com/Rocksus/pogo/internal/utils/stringformat"
+	"github.com/nickylogan/go-log"
 
 	"github.com/Rocksus/pogo/configs"
 	"github.com/Rocksus/pogo/internal/repositories/interpretor"
@@ -32,9 +32,9 @@ func InitChatRepository(config configs.ChatConfig, interpretor interpretor.Inter
 	}
 	err := newRepo.initClient()
 	if err != nil {
-		log.Fatalf("[Init Chat] Failed to initialize chat repository, err: %s", err.Error())
+		log.WithError(err).Fatalf("Failed to initialize chat repository")
 	}
-	log.Print("[Init Chat] Successfully initialized chat repository.")
+	log.Infoln("Successfully initialized chat repository")
 	return newRepo
 }
 
@@ -52,7 +52,7 @@ func (l *lineRepo) initClient() error {
 
 func (l *lineRepo) replyDefaultMessage(replyToken string) {
 	if _, err := l.Client.ReplyMessage(replyToken, linebot.NewTextMessage("Sorry I don't quite get that.")).Do(); err != nil {
-		log.Print(err)
+		log.Errorln(err)
 	}
 }
 
@@ -73,7 +73,7 @@ func (l *lineRepo) GetHandler() func(w http.ResponseWriter, req *http.Request) {
 				case *linebot.TextMessage:
 					data, err := l.Interpretor.InterpretText(message.Text)
 					if err != nil {
-						log.Print(err)
+						log.Errorln(err)
 						l.replyDefaultMessage(event.ReplyToken)
 					}
 					switch data.Intent {
@@ -83,13 +83,13 @@ func (l *lineRepo) GetHandler() func(w http.ResponseWriter, req *http.Request) {
 					rctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
 					defer cancel()
 					if _, err = l.Client.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(message.Text)).WithContext(rctx).Do(); err != nil {
-						log.Print(err)
+						log.Errorln(err)
 					}
 				case *linebot.StickerMessage:
 					replyMessage := fmt.Sprintf(
 						"sticker id is %s, stickerResourceType is %s", message.StickerID, message.StickerResourceType)
 					if _, err = l.Client.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(replyMessage)).Do(); err != nil {
-						log.Print(err)
+						log.Errorln(err)
 					}
 				}
 			}
@@ -129,21 +129,21 @@ func (l *lineRepo) SendDailyMessage(userID string) {
 	jokeData, err := joke.GetRandomJoke()
 	if err != nil {
 		jokeExist = false
-		log.Printf("[Chat Cron][SendDailyMessage] Failed to get joke data, err: %s", err.Error())
+		log.WithError(err).Errorln("Failed to get joke data")
 	}
 	weatherData, err := weather.QueryLocation("jakarta")
 	if err != nil {
 		weatherExist = false
-		log.Printf("[Chat Cron][SendDailyMessage] Failed to get weather data, err: %s", err.Error())
+		log.WithError(err).Errorln("Failed to get weather data")
 	}
 	newsData, err := news.GetTopNews(news.TopNewsRequestParam{Max: 3})
 	if err != nil {
 		newsExist = false
-		log.Printf("[Chat Cron][SendDailyMessage] Failed to get news data, err: %s", err.Error())
+		log.WithError(err).Errorln("Failed to get news data")
 	}
 	userData, err := l.GetUserProfile(userID)
 	if err != nil {
-		log.Printf("[Chat Cron][SendDailyMessage] Failed to get user data, err: %s", err.Error())
+		log.WithError(err).Errorln("Failed to get user data")
 		userName = "User"
 	} else {
 		userName = userData.DisplayName
@@ -169,6 +169,6 @@ func (l *lineRepo) SendDailyMessage(userID string) {
 
 	_, err = l.Client.PushMessage(userID, messages...).WithContext(rctx).Do()
 	if err != nil {
-		log.Printf("[Chat Cron][SendDailyMessage] Failed to send message, err: %s", err.Error())
+		log.WithError(err).Errorln("Failed to send message")
 	}
 }

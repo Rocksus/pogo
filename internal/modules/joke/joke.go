@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
+
+	"github.com/nickylogan/go-log"
 )
 
 var def Repository
@@ -20,7 +21,7 @@ type Repository interface {
 func Init() {
 	newRepo := &jokeRepo{}
 	def = newRepo
-	log.Print("[Joke][Init] Joke module initialized successfully.")
+	log.Infoln("Joke module initialized successfully.")
 }
 
 func (j *jokeRepo) GetRandomJoke() (Data, error) {
