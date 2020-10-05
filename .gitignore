@@ -9,3 +9,7 @@ https-server.key
 
 # Vendor Packages
 vendor/
+
+# Editor specific files
+.idea
+.vscode
