@@ -4,12 +4,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Rocksus/pogo/internal/controllers/linehttp"
 	"github.com/Rocksus/pogo/internal/modules/joke"
 	"github.com/Rocksus/pogo/internal/modules/news"
 	"github.com/Rocksus/pogo/internal/modules/weather"
-	"github.com/Rocksus/pogo/internal/repositories/chat"
 	"github.com/Rocksus/pogo/internal/repositories/interpretor"
 	"github.com/Rocksus/pogo/internal/utils/logging"
+	"github.com/line/line-bot-sdk-go/linebot"
 	"github.com/nickylogan/go-log"
 
 	"github.com/Rocksus/pogo/configs"
@@ -31,12 +32,14 @@ func main() {
 	news.Init(config.News)
 	joke.Init()
 
+	bot, err := linebot.New(config.Chat.ChannelSecret, config.Chat.ChannelAccessToken)
+	if err != nil {
+		log.WithError(err).Fatalln("failed to create linebot client")
+	}
+
 	interpretor := interpretor.InitInterpretorRepository(config.Interpretor)
-
-	chatbot := chat.InitChatRepository(config.Chat, interpretor)
-	handler := logging.Middleware(chatbot.GetHandler())
-
-	http.HandleFunc("/callback", handler)
+	controller := linehttp.NewController(bot, interpretor)
+	http.HandleFunc("/callback", logging.Middleware(controller.HandleWebhook))
 
 	srv := &http.Server{
 		Handler:      http.DefaultServeMux,
