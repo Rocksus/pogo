@@ -9,6 +9,7 @@ import (
 	"github.com/Rocksus/pogo/internal/modules/news"
 	"github.com/Rocksus/pogo/internal/modules/weather"
 	"github.com/Rocksus/pogo/internal/repositories/interpretor"
+	"github.com/Rocksus/pogo/internal/usecase/replier"
 	"github.com/Rocksus/pogo/internal/utils/logging"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"github.com/nickylogan/go-log"
@@ -38,7 +39,8 @@ func main() {
 	}
 
 	interpretor := interpretor.InitInterpretorRepository(config.Interpretor)
-	controller := linehttp.NewController(bot, interpretor)
+	replier := replier.NewMessageReplier(interpretor)
+	controller := linehttp.NewController(bot, replier)
 	http.HandleFunc("/callback", logging.Middleware(controller.HandleWebhook))
 
 	srv := &http.Server{

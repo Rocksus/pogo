@@ -2,30 +2,27 @@ package linehttp
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
-	"github.com/Rocksus/pogo/internal/repositories/interpretor"
+	"github.com/Rocksus/pogo/internal/usecase/replier"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"github.com/nickylogan/go-log"
 )
 
-type controller struct {
-	client      *linebot.Client
-	interpreter interpretor.Interpretor
+type Controller struct {
+	client     *linebot.Client
+	msgReplier replier.MessageReplier
 }
 
 // NewController is...
-//
-// TODO: intrepreter should be in use case.
-func NewController(client *linebot.Client, interpreter interpretor.Interpretor) *controller {
-	return &controller{
-		client:      client,
-		interpreter: interpreter,
+func NewController(client *linebot.Client, msgReplier replier.MessageReplier) *Controller {
+	return &Controller{
+		client:     client,
+		msgReplier: msgReplier,
 	}
 }
 
-func (c *controller) HandleWebhook(w http.ResponseWriter, req *http.Request) {
+func (c *Controller) HandleWebhook(w http.ResponseWriter, req *http.Request) {
 	events, err := c.client.ParseRequest(req)
 	if err != nil {
 		log.Errorln(err)
@@ -47,35 +44,15 @@ func (c *controller) HandleWebhook(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// TODO: this function should be refactored to use the UC.
-func (c *controller) handleMessageEvent(ctx context.Context, event *linebot.Event) {
-	switch msg := event.Message.(type) {
-	case *linebot.TextMessage:
-		data, err := c.interpreter.InterpretText(msg.Text)
-		if err != nil {
-			log.Errorln(err)
-			c.replyDefaultMessage(event.ReplyToken)
-		}
-		switch data.Intent {
-
-		}
-
-		_, err = c.client.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg.Text)).
-			WithContext(ctx).
-			Do()
-		if err != nil {
-			log.Errorln(err)
-		}
-	case *linebot.StickerMessage:
-		replyMessage := fmt.Sprintf(
-			"sticker id is %s, stickerResourceType is %s", msg.StickerID, msg.StickerResourceType)
-		if _, err := c.client.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(replyMessage)).Do(); err != nil {
-			log.Errorln(err)
-		}
+func (c *Controller) handleMessageEvent(ctx context.Context, event *linebot.Event) {
+	reply := c.msgReplier.Reply(ctx, event.Message)
+	_, err := c.client.ReplyMessage(event.ReplyToken, reply).Do()
+	if err != nil {
+		log.Errorln(err)
 	}
 }
 
-func (c *controller) replyDefaultMessage(replyToken string) {
+func (c *Controller) replyDefaultMessage(replyToken string) {
 	if _, err := c.client.ReplyMessage(replyToken, linebot.NewTextMessage("Sorry I don't quite get that.")).Do(); err != nil {
 		log.Errorln(err)
 	}
