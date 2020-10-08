@@ -8,7 +8,7 @@ import (
 	"github.com/Rocksus/pogo/internal/modules/joke"
 	"github.com/Rocksus/pogo/internal/modules/news"
 	"github.com/Rocksus/pogo/internal/modules/weather"
-	"github.com/Rocksus/pogo/internal/repositories/interpretor"
+	"github.com/Rocksus/pogo/internal/repositories/interpreter/witai"
 	"github.com/Rocksus/pogo/internal/usecase/replier"
 	"github.com/Rocksus/pogo/internal/utils/logging"
 	"github.com/line/line-bot-sdk-go/linebot"
@@ -38,8 +38,8 @@ func main() {
 		log.WithError(err).Fatalln("failed to create linebot client")
 	}
 
-	interpretor := interpretor.InitInterpretorRepository(config.Interpretor)
-	replier := replier.NewMessageReplier(interpretor)
+	interpreter := witai.NewInterpreter(config.Interpretor)
+	replier := replier.NewMessageReplier(interpreter)
 	controller := linehttp.NewController(bot, replier)
 	http.HandleFunc("/callback", logging.Middleware(controller.HandleWebhook))
 

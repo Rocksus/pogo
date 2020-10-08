@@ -13,7 +13,7 @@ import (
 	"github.com/nickylogan/go-log"
 
 	"github.com/Rocksus/pogo/configs"
-	"github.com/Rocksus/pogo/internal/repositories/interpretor"
+	"github.com/Rocksus/pogo/internal/repositories/interpreter"
 	"github.com/line/line-bot-sdk-go/linebot"
 )
 
@@ -23,7 +23,7 @@ type Repository interface {
 	GetUserProfile(userID string) (*UserData, error)
 }
 
-func InitChatRepository(config configs.ChatConfig, interpretor interpretor.Interpretor) Repository {
+func InitChatRepository(config configs.ChatConfig, interpretor interpreter.Interpreter) Repository {
 	newRepo := &lineRepo{
 		MasterID:           config.MasterID,
 		ChannelAccessToken: config.ChannelAccessToken,
@@ -76,9 +76,8 @@ func (l *lineRepo) GetHandler() func(w http.ResponseWriter, req *http.Request) {
 						log.Errorln(err)
 						l.replyDefaultMessage(event.ReplyToken)
 					}
-					switch data.Intent {
 
-					}
+					_ = data
 
 					rctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
 					defer cancel()

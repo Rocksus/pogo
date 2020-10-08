@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/Rocksus/pogo/internal/repositories/interpretor"
+	"github.com/Rocksus/pogo/internal/repositories/interpreter"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"github.com/nickylogan/go-log"
 )
@@ -15,10 +15,10 @@ type MessageReplier interface {
 }
 
 type messageReplier struct {
-	interpreter interpretor.Interpretor
+	interpreter interpreter.Interpreter
 }
 
-func NewMessageReplier(interpreter interpretor.Interpretor) MessageReplier {
+func NewMessageReplier(interpreter interpreter.Interpreter) MessageReplier {
 	return &messageReplier{
 		interpreter: interpreter,
 	}

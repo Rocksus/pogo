@@ -6,6 +6,8 @@ github.com/line/line-bot-sdk-go v7.1.0+incompatible h1:HiIhyTO0cuZFKpIu1DoOHvG7S
 github.com/line/line-bot-sdk-go v7.1.0+incompatible/go.mod h1:0RjLjJEAU/3GIcHkC3av6O4jInAbt25nnZVmOFUgDBg=
 github.com/logrusorgru/aurora/v3 v3.0.0 h1:R6zcoZZbvVcGMvDCKo45A9U/lzYyzl5NfYIvznmDfE4=
 github.com/logrusorgru/aurora/v3 v3.0.0/go.mod h1:vsR12bk5grlLvLXAYrBsb5Oc/N+LxAlxggSjiwMnCUc=
+github.com/mitchellh/mapstructure v1.3.3 h1:SzB1nHZ2Xi+17FP0zVQBHIZqvwRN9408fJO8h+eeNA8=
+github.com/mitchellh/mapstructure v1.3.3/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/nickylogan/go-log v0.0.0-20201005164444-e42dc3b8cd3c h1:2k50wPy18J37Z8xgXYDi5hhycsGwAWllSLrWjHirTJQ=
 github.com/nickylogan/go-log v0.0.0-20201005164444-e42dc3b8cd3c/go.mod h1:TdbUEO44H0vWbdr22Ipj9LQjYOVCtAn7v00adU/ftG8=
 github.com/nickylogan/go-log v0.0.0-20201005173405-c789546b30a8 h1:SsbAMINvWMA3tyMksCrMsxFL3ULNRhpRMzwiGmif5cU=
