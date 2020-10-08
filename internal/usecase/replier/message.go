@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"time"
 
 	"github.com/Rocksus/pogo/internal/modules/joke"
 	"github.com/Rocksus/pogo/internal/modules/weather"
@@ -14,7 +15,7 @@ import (
 )
 
 type MessageReplier interface {
-	Reply(ctx context.Context, message linebot.Message) (reply linebot.SendingMessage)
+	Reply(ctx context.Context, message linebot.Message) chan linebot.SendingMessage
 }
 
 type messageReplier struct {
@@ -27,25 +28,26 @@ func NewMessageReplier(interpreter interpreter.Interpreter) MessageReplier {
 	}
 }
 
-func (m *messageReplier) Reply(ctx context.Context, message linebot.Message) (reply linebot.SendingMessage) {
-	var err error
-	switch msg := message.(type) {
-	case *linebot.TextMessage:
-		reply, err = m.handleTextMessage(ctx, msg)
-	case *linebot.StickerMessage:
-		reply, err = m.handleStickerMessage(ctx, msg)
-	default:
-		err = fmt.Errorf("unhandled message type: %s", m.getMessageType(message))
-		log.Errorln(err)
-	}
-	if err != nil {
-		return m.createDefaultReply()
-	}
+func (m *messageReplier) Reply(ctx context.Context, message linebot.Message) (replyCh chan linebot.SendingMessage) {
+	replyCh = make(chan linebot.SendingMessage)
+	go func() {
+		defer close(replyCh)
 
-	return reply
+		switch msg := message.(type) {
+		case *linebot.TextMessage:
+			m.handleTextMessage(ctx, msg, replyCh)
+		case *linebot.StickerMessage:
+			m.handleStickerMessage(ctx, msg, replyCh)
+		default:
+			log.Errorln("unhandled message type:", m.getMessageType(msg))
+			replyCh <- m.createDefaultReply()
+		}
+	}()
+
+	return replyCh
 }
 
-func (m *messageReplier) handleTextMessage(ctx context.Context, msg *linebot.TextMessage) (reply linebot.SendingMessage, err error) {
+func (m *messageReplier) handleTextMessage(ctx context.Context, msg *linebot.TextMessage, replyCh chan<- linebot.SendingMessage) {
 	data, err := m.interpreter.InterpretText(msg.Text)
 	if err != nil {
 		log.Errorln(err)
@@ -58,37 +60,40 @@ func (m *messageReplier) handleTextMessage(ctx context.Context, msg *linebot.Tex
 	case "tellJoke":
 		j, err := joke.GetRandomJoke()
 		if err != nil {
-			return nil, err
+			log.Errorln(err)
+			replyCh <- linebot.NewTextMessage("I have ran out of funny juice. Check back again later :)")
 		}
 		jokeStr := fmt.Sprintf("%s\n\n%s", j.Setup, j.Punchline)
-		return linebot.NewTextMessage(jokeStr), nil
+		replyCh <- linebot.NewTextMessage(jokeStr)
 	case "weather/checkWeather":
+		replyCh <- linebot.NewTextMessage("Hold on, let me ask the weather gods")
+		time.Sleep(2 * time.Second)
 		w, err := weather.QueryLocation("jakarta")
 		if err != nil {
-			return nil, err
+			log.Errorln(err)
+			replyCh <- linebot.NewTextMessage("Sorry, the weather gods aren't answering my questions.")
+			return
 		}
-		weatherStr := fmt.Sprintf(
-			"Here's the weather in %s, %s:\n\n%s\nHumidity: %d\nTemperature: %.2f°C",
-			w.Name,
-			w.System.Country,
-			w.Weather[0].Description,
-			w.Details.Humidity,
-			w.Details.TemperatureCelcius,
-		)
-		return linebot.NewTextMessage(weatherStr), nil
+		replyCh <- linebot.NewTextMessage(fmt.Sprintf("Got it! Here's the weather in %s, %s", w.Name, w.System.Country))
+		replyCh <- linebot.NewTextMessage(fmt.Sprintf("%s: %s", w.Weather[0].Main, w.Weather[0].Description))
+		replyCh <- linebot.NewTextMessage(fmt.Sprintf("Humidity: %d", w.Details.Humidity))
+		replyCh <- linebot.NewTextMessage(fmt.Sprintf("Temperature: %.2f°C", w.Details.TemperatureCelcius))
 	default:
-		return nil, fmt.Errorf("unhandled intent: %s", intent.Name)
+		log.Errorln("unhandled intent:", intent.Name)
+		replyCh <- m.createDefaultReply()
 	}
+
+	return
 }
 
-func (m *messageReplier) handleStickerMessage(ctx context.Context, msg *linebot.StickerMessage) (reply linebot.SendingMessage, err error) {
+func (m *messageReplier) handleStickerMessage(ctx context.Context, msg *linebot.StickerMessage, replyCh chan<- linebot.SendingMessage) {
 	// This is just to mimic the previous behavior
 	replyText := fmt.Sprintf(
 		"sticker id is %s, stickerResourceType is %s",
 		msg.StickerID,
 		msg.StickerResourceType,
 	)
-	return linebot.NewTextMessage(replyText), nil
+	replyCh <- linebot.NewTextMessage(replyText)
 }
 
 func (m *messageReplier) getBestIntent(resp interpreter.Response) interpreter.Intent {

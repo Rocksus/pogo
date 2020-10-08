@@ -40,15 +40,30 @@ func (c *Controller) HandleWebhook(w http.ResponseWriter, req *http.Request) {
 		case linebot.EventTypeMessage:
 			c.handleMessageEvent(req.Context(), e)
 		default:
+			log.Infoln("got event:", e.Type)
 		}
 	}
 }
 
 func (c *Controller) handleMessageEvent(ctx context.Context, event *linebot.Event) {
-	reply := c.msgReplier.Reply(ctx, event.Message)
-	_, err := c.client.ReplyMessage(event.ReplyToken, reply).Do()
-	if err != nil {
-		log.Errorln(err)
+	// TODO: replier might add delays
+	replies := c.msgReplier.Reply(ctx, event.Message)
+
+	var to string
+	switch event.Source.Type {
+	case linebot.EventSourceTypeUser:
+		to = event.Source.UserID
+	case linebot.EventSourceTypeGroup:
+		to = event.Source.GroupID
+	case linebot.EventSourceTypeRoom:
+		to = event.Source.RoomID
+	}
+
+	for reply := range replies {
+		_, err := c.client.PushMessage(to, reply).Do()
+		if err != nil {
+			log.Errorln(err)
+		}
 	}
 }
 
