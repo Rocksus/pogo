@@ -47,7 +47,7 @@ func (c *Controller) HandleWebhook(w http.ResponseWriter, req *http.Request) {
 
 func (c *Controller) handleMessageEvent(ctx context.Context, event *linebot.Event) {
 	// TODO: replier might add delays
-	replies := c.msgReplier.Reply(ctx, event.Message)
+	replies := c.msgReplier.Reply(ctx, event)
 
 	var to string
 	switch event.Source.Type {

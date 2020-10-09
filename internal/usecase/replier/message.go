@@ -15,7 +15,7 @@ import (
 )
 
 type MessageReplier interface {
-	Reply(ctx context.Context, message linebot.Message) chan linebot.SendingMessage
+	Reply(ctx context.Context, event *linebot.Event) chan linebot.SendingMessage
 }
 
 type messageReplier struct {
@@ -28,7 +28,13 @@ func NewMessageReplier(interpreter interpreter.Interpreter) MessageReplier {
 	}
 }
 
-func (m *messageReplier) Reply(ctx context.Context, message linebot.Message) (replyCh chan linebot.SendingMessage) {
+func (m *messageReplier) Reply(ctx context.Context, event *linebot.Event) (replyCh chan linebot.SendingMessage) {
+	// safeguard against non-message events
+	if event.Type != linebot.EventTypeMessage {
+		return
+	}
+	message := event.Message
+
 	replyCh = make(chan linebot.SendingMessage)
 	go func() {
 		defer close(replyCh)
