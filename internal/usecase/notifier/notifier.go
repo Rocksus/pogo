@@ -3,8 +3,9 @@ package notifier
 import (
 	"context"
 	"fmt"
-	"time"
+	"math/rand"
 
+	"github.com/Rocksus/pogo/internal/repositories/user"
 	"github.com/Rocksus/pogo/internal/utils/stringformat"
 	"github.com/Rocksus/pogo/pkg/plugin/news"
 	"github.com/line/line-bot-sdk-go/linebot"
@@ -16,11 +17,12 @@ type Notifier interface {
 }
 
 type notifier struct {
-	client *linebot.Client
+	client   *linebot.Client
+	userRepo user.Repository
 }
 
-func New(client *linebot.Client) Notifier {
-	return &notifier{client: client}
+func New(client *linebot.Client, userRepo user.Repository) Notifier {
+	return &notifier{client: client, userRepo: userRepo}
 }
 
 func (n *notifier) PushDaily(ctx context.Context) (err error) {
@@ -32,42 +34,16 @@ func (n *notifier) PushDaily(ctx context.Context) (err error) {
 // TODO: refactor to use repo
 func (n *notifier) sendMessage(ctx context.Context, userID string) {
 	var messages []linebot.SendingMessage
-	messages = make([]linebot.SendingMessage, 0, 3)
-	// jokeExist := true
-	// weatherExist := true
-	newsExist := true
-	userName := "User"
+	messages = append(messages, n.createGreeting(ctx, userID))
 
-	// jokeData, err := joke.GetRandomJoke()
-	// if err != nil {
-	// 	jokeExist = false
-	// 	log.WithError(err).Errorln("Failed to get joke data")
-	// }
-	// weatherData, err := weather.QueryLocation("jakarta")
-	// if err != nil {
-	// 	weatherExist = false
-	// 	log.WithError(err).Errorln("Failed to get weather data")
-	// }
+	// TODO: use plugins
+	newsExist := true
+
 	newsData, err := news.GetTopNews(news.TopNewsRequestParam{Max: 3})
 	if err != nil {
 		newsExist = false
 		log.WithError(err).Errorln("Failed to get news data")
 	}
-	userData, err := n.getUserProfile(userID)
-	if err != nil {
-		log.WithError(err).Errorln("Failed to get user data")
-		userName = "User"
-	} else {
-		userName = userData.DisplayName
-	}
-
-	messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("Hello %s, here are your daily stuffs", stringformat.GetFirstWord(userName))))
-	// if weatherExist {
-	// 	messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("Here's your daily weather update,\n\n%s, %s:\n%s\nHumidity: %d\nTemperature: %.2f degrees C", weatherData.Name, weatherData.System.Country, weatherData.Weather[0].Description, weatherData.Details.Humidity, weatherData.Details.TemperatureCelcius)))
-	// }
-	// if jokeExist {
-	// 	messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("%s\n\n%s", jokeData.Setup, jokeData.Punchline)))
-	// }
 	if newsExist {
 		newsText := fmt.Sprintf("Top news for today:\n")
 		for _, v := range newsData.Articles {
@@ -82,24 +58,32 @@ func (n *notifier) sendMessage(ctx context.Context, userID string) {
 	}
 }
 
-// TODO: move to repo
-func (n *notifier) getUserProfile(userID string) (*UserData, error) {
-	if userID == "" {
-		return nil, fmt.Errorf("[Chat][GetUserProfile] UserID can't be empty")
-	}
-
-	rctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
-	defer cancel()
-
-	userData, err := n.client.GetProfile(userID).WithContext(rctx).Do()
+func (n *notifier) createGreeting(ctx context.Context, userID string) linebot.SendingMessage {
+	helloUser, helloNoUser := randomHello()
+	profile, err := n.userRepo.GetByID(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("[Chat][GetUserProfile] Can't get user profile, err: %s", err.Error())
+		return linebot.NewTextMessage(helloNoUser)
 	}
 
-	return &UserData{
-		UserID:        userData.UserID,
-		DisplayName:   userData.DisplayName,
-		PictureURL:    userData.PictureURL,
-		StatusMessage: userData.StatusMessage,
-	}, nil
+	return linebot.NewTextMessage(fmt.Sprintf(helloUser, stringformat.GetFirstWord(profile.Name)))
+}
+
+func randomHello() (withUser, noUser string) {
+	choices := [][2]string{
+		{
+			"Hey %s, how are you doing? Here are your daily stuffs :)",
+			"Hey, how are you doing? Here are your daily stuffs :)",
+		},
+		{
+			"Hello %s, what's up? Here are some things to kick off your day",
+			"Hello! Here are some things to kick off your day",
+		},
+		{
+			"Hi %s, how's it going? Here's some stuff to start your day",
+			"Hi! Here's some stuff to start your day :D",
+		},
+	}
+
+	i := rand.Intn(len(choices))
+	return choices[i][0], choices[i][1]
 }
