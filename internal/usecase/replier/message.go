@@ -7,9 +7,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/Rocksus/pogo/internal/modules/joke"
-	"github.com/Rocksus/pogo/internal/modules/weather"
 	"github.com/Rocksus/pogo/internal/repositories/interpreter"
+	"github.com/Rocksus/pogo/pkg/plugin/joke"
+	"github.com/Rocksus/pogo/pkg/plugin/weather"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"github.com/nickylogan/go-log"
 )
