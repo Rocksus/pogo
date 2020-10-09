@@ -18,6 +18,8 @@ github.com/nickylogan/go-log v0.0.0-20201005182234-20f322c71c20 h1:KZmBWo3RYmmW3
 github.com/nickylogan/go-log v0.0.0-20201005182234-20f322c71c20/go.mod h1:TdbUEO44H0vWbdr22Ipj9LQjYOVCtAn7v00adU/ftG8=
 github.com/nickylogan/go-log v0.0.0-20201005184020-1cb19c4c0979 h1:bjXXrFwY5Eqe4b/1jHE74muw4XfHA0odIJWSpxZr/6c=
 github.com/nickylogan/go-log v0.0.0-20201005184020-1cb19c4c0979/go.mod h1:TdbUEO44H0vWbdr22Ipj9LQjYOVCtAn7v00adU/ftG8=
+github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
+github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/sirupsen/logrus v1.7.0 h1:ShrD1U9pZB12TX0cVy0DtePoCH97K8EtX+mg7ZARUtM=

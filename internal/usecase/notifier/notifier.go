@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/Rocksus/pogo/internal/utils/stringformat"
-	"github.com/Rocksus/pogo/pkg/plugin/joke"
 	"github.com/Rocksus/pogo/pkg/plugin/news"
 	"github.com/Rocksus/pogo/pkg/plugin/weather"
 	"github.com/line/line-bot-sdk-go/linebot"
@@ -35,16 +34,16 @@ func (n *notifier) PushDaily(ctx context.Context) (err error) {
 func (n *notifier) sendMessage(ctx context.Context, userID string) {
 	var messages []linebot.SendingMessage
 	messages = make([]linebot.SendingMessage, 0, 3)
-	jokeExist := true
+	// jokeExist := true
 	weatherExist := true
 	newsExist := true
 	userName := "User"
 
-	jokeData, err := joke.GetRandomJoke()
-	if err != nil {
-		jokeExist = false
-		log.WithError(err).Errorln("Failed to get joke data")
-	}
+	// jokeData, err := joke.GetRandomJoke()
+	// if err != nil {
+	// 	jokeExist = false
+	// 	log.WithError(err).Errorln("Failed to get joke data")
+	// }
 	weatherData, err := weather.QueryLocation("jakarta")
 	if err != nil {
 		weatherExist = false
@@ -67,9 +66,9 @@ func (n *notifier) sendMessage(ctx context.Context, userID string) {
 	if weatherExist {
 		messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("Here's your daily weather update,\n\n%s, %s:\n%s\nHumidity: %d\nTemperature: %.2f degrees C", weatherData.Name, weatherData.System.Country, weatherData.Weather[0].Description, weatherData.Details.Humidity, weatherData.Details.TemperatureCelcius)))
 	}
-	if jokeExist {
-		messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("%s\n\n%s", jokeData.Setup, jokeData.Punchline)))
-	}
+	// if jokeExist {
+	// 	messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("%s\n\n%s", jokeData.Setup, jokeData.Punchline)))
+	// }
 	if newsExist {
 		newsText := fmt.Sprintf("Top news for today:\n")
 		for _, v := range newsData.Articles {

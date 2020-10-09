@@ -8,6 +8,7 @@ import (
 	"github.com/Rocksus/pogo/internal/repositories/interpreter/witai"
 	"github.com/Rocksus/pogo/internal/usecase/replier"
 	"github.com/Rocksus/pogo/internal/utils/logging"
+	"github.com/Rocksus/pogo/pkg/plugin"
 	"github.com/Rocksus/pogo/pkg/plugin/joke"
 	"github.com/Rocksus/pogo/pkg/plugin/news"
 	"github.com/Rocksus/pogo/pkg/plugin/weather"
@@ -31,7 +32,7 @@ func main() {
 
 	weather.Init(config.Weather)
 	news.Init(config.News)
-	joke.Init()
+	jokePlugin := joke.InitPlugin()
 
 	bot, err := linebot.New(config.Chat.ChannelSecret, config.Chat.ChannelAccessToken)
 	if err != nil {
@@ -39,7 +40,9 @@ func main() {
 	}
 
 	interpreter := witai.NewInterpreter(config.Interpretor)
-	replier := replier.NewMessageReplier(interpreter)
+	replier := replier.NewMessageReplier(interpreter, map[string]plugin.MessageReplier{
+		"tellJoke": jokePlugin,
+	})
 	controller := linehttp.NewController(bot, replier)
 	http.HandleFunc("/callback", logging.Middleware(controller.HandleWebhook))
 

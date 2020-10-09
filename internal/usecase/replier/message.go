@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/Rocksus/pogo/internal/repositories/interpreter"
-	"github.com/Rocksus/pogo/pkg/plugin/joke"
+	"github.com/Rocksus/pogo/pkg/plugin"
 	"github.com/Rocksus/pogo/pkg/plugin/weather"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"github.com/nickylogan/go-log"
@@ -20,11 +20,13 @@ type MessageReplier interface {
 
 type messageReplier struct {
 	interpreter interpreter.Interpreter
+	plugins     map[string]plugin.MessageReplier
 }
 
-func NewMessageReplier(interpreter interpreter.Interpreter) MessageReplier {
+func NewMessageReplier(interpreter interpreter.Interpreter, plugins map[string]plugin.MessageReplier) MessageReplier {
 	return &messageReplier{
 		interpreter: interpreter,
+		plugins:     plugins,
 	}
 }
 
@@ -61,16 +63,18 @@ func (m *messageReplier) handleTextMessage(ctx context.Context, msg *linebot.Tex
 	}
 
 	intent := m.getBestIntent(data)
+	replier, ok := m.plugins[intent.Name]
+	if ok {
+		replier.Reply(ctx, plugin.Message{
+			Text:     msg.Text,
+			Intent:   intent.Name,
+			Entities: data.Entities,
+		}, replyCh)
+		return
+	}
+
 	// TODO: use map of handlers later. This is just a temporary logic
 	switch intent.Name {
-	case "tellJoke":
-		j, err := joke.GetRandomJoke()
-		if err != nil {
-			log.Errorln(err)
-			replyCh <- linebot.NewTextMessage("I have ran out of funny juice. Check back again later :)")
-		}
-		jokeStr := fmt.Sprintf("%s\n\n%s", j.Setup, j.Punchline)
-		replyCh <- linebot.NewTextMessage(jokeStr)
 	case "weather/checkWeather":
 		replyCh <- linebot.NewTextMessage("Hold on, let me ask the weather gods")
 		time.Sleep(2 * time.Second)
