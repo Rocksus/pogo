@@ -7,7 +7,6 @@ import (
 
 	"github.com/Rocksus/pogo/internal/utils/stringformat"
 	"github.com/Rocksus/pogo/pkg/plugin/news"
-	"github.com/Rocksus/pogo/pkg/plugin/weather"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"github.com/nickylogan/go-log"
 )
@@ -35,7 +34,7 @@ func (n *notifier) sendMessage(ctx context.Context, userID string) {
 	var messages []linebot.SendingMessage
 	messages = make([]linebot.SendingMessage, 0, 3)
 	// jokeExist := true
-	weatherExist := true
+	// weatherExist := true
 	newsExist := true
 	userName := "User"
 
@@ -44,11 +43,11 @@ func (n *notifier) sendMessage(ctx context.Context, userID string) {
 	// 	jokeExist = false
 	// 	log.WithError(err).Errorln("Failed to get joke data")
 	// }
-	weatherData, err := weather.QueryLocation("jakarta")
-	if err != nil {
-		weatherExist = false
-		log.WithError(err).Errorln("Failed to get weather data")
-	}
+	// weatherData, err := weather.QueryLocation("jakarta")
+	// if err != nil {
+	// 	weatherExist = false
+	// 	log.WithError(err).Errorln("Failed to get weather data")
+	// }
 	newsData, err := news.GetTopNews(news.TopNewsRequestParam{Max: 3})
 	if err != nil {
 		newsExist = false
@@ -63,9 +62,9 @@ func (n *notifier) sendMessage(ctx context.Context, userID string) {
 	}
 
 	messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("Hello %s, here are your daily stuffs", stringformat.GetFirstWord(userName))))
-	if weatherExist {
-		messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("Here's your daily weather update,\n\n%s, %s:\n%s\nHumidity: %d\nTemperature: %.2f degrees C", weatherData.Name, weatherData.System.Country, weatherData.Weather[0].Description, weatherData.Details.Humidity, weatherData.Details.TemperatureCelcius)))
-	}
+	// if weatherExist {
+	// 	messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("Here's your daily weather update,\n\n%s, %s:\n%s\nHumidity: %d\nTemperature: %.2f degrees C", weatherData.Name, weatherData.System.Country, weatherData.Weather[0].Description, weatherData.Details.Humidity, weatherData.Details.TemperatureCelcius)))
+	// }
 	// if jokeExist {
 	// 	messages = append(messages, linebot.NewTextMessage(fmt.Sprintf("%s\n\n%s", jokeData.Setup, jokeData.Punchline)))
 	// }

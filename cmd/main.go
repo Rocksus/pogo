@@ -30,8 +30,8 @@ func main() {
 
 	config := configs.New()
 
-	weather.Init(config.Weather)
 	news.Init(config.News)
+	weatherPlugin := weather.InitPlugin(config.Weather.APIKey)
 	jokePlugin := joke.InitPlugin()
 
 	bot, err := linebot.New(config.Chat.ChannelSecret, config.Chat.ChannelAccessToken)
@@ -41,7 +41,8 @@ func main() {
 
 	interpreter := witai.NewInterpreter(config.Interpretor)
 	replier := replier.NewMessageReplier(interpreter, map[string]plugin.MessageReplier{
-		"tellJoke": jokePlugin,
+		"tellJoke":             jokePlugin,
+		"weather/checkWeather": weatherPlugin,
 	})
 	controller := linehttp.NewController(bot, replier)
 	http.HandleFunc("/callback", logging.Middleware(controller.HandleWebhook))

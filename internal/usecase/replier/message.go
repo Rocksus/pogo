@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
-	"time"
 
 	"github.com/Rocksus/pogo/internal/repositories/interpreter"
 	"github.com/Rocksus/pogo/pkg/plugin"
-	"github.com/Rocksus/pogo/pkg/plugin/weather"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"github.com/nickylogan/go-log"
 )
@@ -64,36 +62,17 @@ func (m *messageReplier) handleTextMessage(ctx context.Context, msg *linebot.Tex
 
 	intent := m.getBestIntent(data)
 	replier, ok := m.plugins[intent.Name]
-	if ok {
-		replier.Reply(ctx, plugin.Message{
-			Text:     msg.Text,
-			Intent:   intent.Name,
-			Entities: data.Entities,
-		}, replyCh)
+	if !ok {
+		log.Errorln("unhandled intent:", intent.Name)
+		replyCh <- m.createDefaultReply()
 		return
 	}
 
-	// TODO: use map of handlers later. This is just a temporary logic
-	switch intent.Name {
-	case "weather/checkWeather":
-		replyCh <- linebot.NewTextMessage("Hold on, let me ask the weather gods")
-		time.Sleep(2 * time.Second)
-		w, err := weather.QueryLocation("jakarta")
-		if err != nil {
-			log.Errorln(err)
-			replyCh <- linebot.NewTextMessage("Sorry, the weather gods aren't answering my questions.")
-			return
-		}
-		replyCh <- linebot.NewTextMessage(fmt.Sprintf("Got it! Here's the weather in %s, %s", w.Name, w.System.Country))
-		replyCh <- linebot.NewTextMessage(fmt.Sprintf("%s: %s", w.Weather[0].Main, w.Weather[0].Description))
-		replyCh <- linebot.NewTextMessage(fmt.Sprintf("Humidity: %d", w.Details.Humidity))
-		replyCh <- linebot.NewTextMessage(fmt.Sprintf("Temperature: %.2f°C", w.Details.TemperatureCelcius))
-	default:
-		log.Errorln("unhandled intent:", intent.Name)
-		replyCh <- m.createDefaultReply()
-	}
-
-	return
+	replier.Reply(ctx, plugin.Message{
+		Text:     msg.Text,
+		Intent:   intent.Name,
+		Entities: data.Entities,
+	}, replyCh)
 }
 
 func (m *messageReplier) handleStickerMessage(ctx context.Context, msg *linebot.StickerMessage, replyCh chan<- linebot.SendingMessage) {
