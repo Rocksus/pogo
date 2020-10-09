@@ -47,7 +47,6 @@ func (w *witInterpreter) parseResponse(resp *witai.MessageResponse) (res interpr
 		return
 	}
 
-	delete(resp.Entities, "intent")
 	res = interpreter.Response{
 		ID:       resp.ID,
 		Text:     resp.Text,
