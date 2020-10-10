@@ -5,6 +5,6 @@ Currently pogo is set to run independently by each user.
 
 ## Usage
 
-1. Set up your environment (LINE auth key, etc)
+1. Copy `.env.example` into your own `.env` file. Fill up the environment variables according to their respective usages.
 2. Set up a webhook (ngrok works fine if you want to test locally)
 3. Run it, and start chatting with your bot!
