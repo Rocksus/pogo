@@ -47,6 +47,25 @@ func (p *Plugin) Reply(ctx context.Context, message plugin.Message, replyCh chan
 	replyCh <- linebot.NewTextMessage(fmt.Sprintf("Temperature: %.2f°C", data.Details.TemperatureCelcius))
 }
 
+func (p *Plugin) GetDaily(ctx context.Context, recipientID string) (linebot.SendingMessage, error) {
+	data, err := p.queryLocation(ctx, "jakarta")
+	if err != nil {
+		return nil, err
+	}
+
+	weatherStr := fmt.Sprintf(
+		"Here's the weather forecast for today in %s, %s\n"+
+			"%s: %s\n"+
+			"Humidity: %d\n"+
+			"Temperature: %.2f°C",
+		data.Name, data.System.Country,
+		data.Weather[0].Main, data.Weather[0].Description,
+		data.Details.Humidity,
+		data.Details.TemperatureCelcius,
+	)
+	return linebot.NewTextMessage(weatherStr), nil
+}
+
 // QueryLocation gets the weather data of a city based on locationID
 func (p *Plugin) queryLocation(ctx context.Context, location string) (data Data, err error) {
 	locationID, ok := locationIDs[location]
