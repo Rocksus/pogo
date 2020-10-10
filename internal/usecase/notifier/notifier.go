@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 
+	"github.com/Rocksus/pogo/internal/repositories/pushnotif"
 	"github.com/Rocksus/pogo/internal/repositories/user"
 	"github.com/Rocksus/pogo/internal/utils/stringformat"
 	"github.com/Rocksus/pogo/pkg/plugin/news"
@@ -17,12 +18,12 @@ type Notifier interface {
 }
 
 type notifier struct {
-	client   *linebot.Client
-	userRepo user.Repository
+	pushNotifier pushnotif.Notifier
+	userRepo     user.Repository
 }
 
-func New(client *linebot.Client, userRepo user.Repository) Notifier {
-	return &notifier{client: client, userRepo: userRepo}
+func New(pushNotifier pushnotif.Notifier, userRepo user.Repository) Notifier {
+	return &notifier{pushNotifier: pushNotifier, userRepo: userRepo}
 }
 
 func (n *notifier) PushDaily(ctx context.Context) (err error) {
@@ -52,9 +53,9 @@ func (n *notifier) sendMessage(ctx context.Context, userID string) {
 		messages = append(messages, linebot.NewTextMessage(newsText))
 	}
 
-	_, err = n.client.PushMessage(userID, messages...).WithContext(ctx).Do()
+	err = n.pushNotifier.PushMessages(ctx, userID, messages...)
 	if err != nil {
-		log.WithError(err).Errorln("Failed to send message")
+		log.WithError(err).WithField("userID", userID).Errorln("failed to push message")
 	}
 }
 
