@@ -3,14 +3,10 @@ package news
 import "time"
 
 const (
-	PublishedAtTimeFormat = "2006-01-02 15:04:05 -0700"
-	queryDateTimeFormat   = "2006-01-02"
-	apiURL                = "https://gnews.io/api/v3"
+	publishTimeFormat   = "2006-01-02 15:04:05 -0700"
+	queryDateTimeFormat = "2006-01-02"
+	apiURL              = "https://gnews.io/api/v3"
 )
-
-type newsRepo struct {
-	APIKey string
-}
 
 type NewsSearchRequestParam struct {
 	Query     string

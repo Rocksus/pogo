@@ -6,40 +6,59 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
-	"github.com/Rocksus/pogo/configs"
+	"github.com/line/line-bot-sdk-go/linebot"
 	"github.com/nickylogan/go-log"
+	"github.com/pkg/errors"
 )
 
-var def Repository
-
-type Repository interface {
-	GetNewsByKeyword(parameter NewsSearchRequestParam) (Data, error)
-	GetTopNews(parameter TopNewsRequestParam) (Data, error)
-	GetNewsByTopic(parameter NewsTopicRequestParam) (Data, error)
+type Plugin struct {
+	client *http.Client
+	apiKey string
 }
 
-func Init(config configs.NewsConfig) error {
-	def = &newsRepo{
-		APIKey: config.APIKey,
+func InitPlugin(apiKey string) *Plugin {
+	return &Plugin{
+		apiKey: apiKey,
+		client: &http.Client{
+			Timeout: 5 * time.Second,
+		},
 	}
-	log.Infoln("News module initialized successfully.")
-	return nil
 }
 
-func (n *newsRepo) GetNewsByKeyword(parameter NewsSearchRequestParam) (Data, error) {
-	var data Data
-	requestURL := fmt.Sprintf("%s/search", apiURL)
-	u, err := url.Parse(requestURL)
+func (p *Plugin) GetDaily(ctx context.Context, recipientID string) (linebot.SendingMessage, error) {
+	news, err := p.getTopNews(ctx, TopNewsRequestParam{Max: 3})
 	if err != nil {
-		return data, fmt.Errorf("[News][GetNewsByKeyword] Error on parsing query: %s", err.Error())
+		log.WithError(err).Errorln("failed to get top news")
+		return nil, err
 	}
-	q := u.Query()
-	q.Set("token", n.APIKey)
+
+	var sb strings.Builder
+	sb.WriteString("Top news for today:\n")
+	for _, v := range news.Articles {
+		sb.WriteString(fmt.Sprintf(
+			"%s: %s\n"+
+				"%s",
+			v.Source.Name, v.Title,
+			v.URL,
+		))
+	}
+	return linebot.NewTextMessage(sb.String()), nil
+}
+
+func (p *Plugin) getNewsByKeyword(ctx context.Context, parameter NewsSearchRequestParam) (data Data, err error) {
+	// validate params
 	if parameter.Query == "" {
-		return data, fmt.Errorf("[News][GetNewsByKeyword] No search string provided")
+		return data, errors.New("no search string provided")
 	}
+
+	// apiURL is guaranteed to be valid
+	u, _ := url.Parse(fmt.Sprintf("%s/search", apiURL))
+
+	q := u.Query()
+	q.Set("token", p.apiKey)
 	q.Set("q", parameter.Query)
 	if parameter.Country != "" {
 		q.Set("country", parameter.Country)
@@ -64,39 +83,16 @@ func (n *newsRepo) GetNewsByKeyword(parameter NewsSearchRequestParam) (Data, err
 	}
 	u.RawQuery = q.Encode()
 
-	req, err := http.NewRequest("GET", u.String(), nil)
-	if err != nil {
-		return data, fmt.Errorf("[News][GetNewsByKeyword] Module Internal Error, %s", err.Error())
-	}
-	client := &http.Client{}
-	rctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
-
-	req = req.WithContext(rctx)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return data, fmt.Errorf("[News][GetNewsByKeyword] Module Internal Error, %s", err.Error())
-	}
-	defer resp.Body.Close()
-
-	err = json.NewDecoder(resp.Body).Decode(&data)
-	if err != nil {
-		return data, fmt.Errorf("[News][GetNewsByKeyword] Module Internal Error, %s", err.Error())
-	}
-
-	return data, nil
+	data, err = p.doRequest(ctx, u.String())
+	return
 }
 
-func (n *newsRepo) GetTopNews(parameter TopNewsRequestParam) (Data, error) {
-	var data Data
-	requestURL := fmt.Sprintf("%s/top-news", apiURL)
-	u, err := url.Parse(requestURL)
-	if err != nil {
-		return data, fmt.Errorf("[News][GetTopNews] Error on parsing query: %s", err.Error())
-	}
+func (p *Plugin) getTopNews(ctx context.Context, parameter TopNewsRequestParam) (data Data, err error) {
+	// apiURL is guaranteed to be valid
+	u, _ := url.Parse(fmt.Sprintf("%s/top-news", apiURL))
+
 	q := u.Query()
-	q.Set("token", n.APIKey)
+	q.Set("token", p.apiKey)
 	if parameter.Country != "" {
 		q.Set("country", parameter.Country)
 	}
@@ -111,42 +107,24 @@ func (n *newsRepo) GetTopNews(parameter TopNewsRequestParam) (Data, error) {
 	}
 	u.RawQuery = q.Encode()
 
-	req, err := http.NewRequest("GET", u.String(), nil)
-	if err != nil {
-		return data, fmt.Errorf("[News][GetTopNews] Module Internal Error, %s", err.Error())
-	}
-	client := &http.Client{}
-	rctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
-
-	req = req.WithContext(rctx)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return data, fmt.Errorf("[News][GetTopNews] Module Internal Error, %s", err.Error())
-	}
-	defer resp.Body.Close()
-
-	err = json.NewDecoder(resp.Body).Decode(&data)
-	if err != nil {
-		return data, fmt.Errorf("[News][GetTopNews] Module Internal Error, %s", err.Error())
-	}
-
-	return data, nil
+	data, err = p.doRequest(ctx, u.String())
+	return
 }
 
-func (n *newsRepo) GetNewsByTopic(parameter NewsTopicRequestParam) (Data, error) {
-	var data Data
+func (p *Plugin) getNewsByTopic(ctx context.Context, parameter NewsTopicRequestParam) (data Data, err error) {
 	if parameter.Topic == "" {
-		return data, fmt.Errorf("[News][GetNewsByTopic] No topic found")
+		err = errors.New("no topic provided")
+		return
 	}
-	requestURL := fmt.Sprintf("%s/topics/%s", apiURL, parameter.Topic)
-	u, err := url.Parse(requestURL)
+
+	u, err := url.Parse(fmt.Sprintf("%s/topics/%s", apiURL, parameter.Topic))
 	if err != nil {
-		return data, fmt.Errorf("[News][GetNewsByTopic] Error on parsing query: %s", err.Error())
+		err = errors.WithMessage(err, "failed to parse url")
+		return
 	}
+
 	q := u.Query()
-	q.Set("token", n.APIKey)
+	q.Set("token", p.apiKey)
 	if parameter.Country != "" {
 		q.Set("lang", parameter.Country)
 	}
@@ -161,38 +139,28 @@ func (n *newsRepo) GetNewsByTopic(parameter NewsTopicRequestParam) (Data, error)
 	}
 	u.RawQuery = q.Encode()
 
-	req, err := http.NewRequest("GET", u.String(), nil)
+	data, err = p.doRequest(ctx, u.String())
+	return
+}
+
+func (p *Plugin) doRequest(ctx context.Context, url string) (data Data, err error) {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return data, fmt.Errorf("[News][GetNewsByTopic] Module Internal Error, %s", err.Error())
+		err = errors.WithMessage(err, "failed to create request")
+		return
 	}
-	client := &http.Client{}
-	rctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
 
-	req = req.WithContext(rctx)
-
-	resp, err := client.Do(req)
+	resp, err := p.client.Do(req.WithContext(ctx))
 	if err != nil {
-		return data, fmt.Errorf("[News][GetNewsByTopic] Module Internal Error, %s", err.Error())
+		err = errors.WithMessage(err, "failed to do request")
+		return
 	}
 	defer resp.Body.Close()
 
 	err = json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
-		return data, fmt.Errorf("[News][GetNewsByTopic] Module Internal Error, %s", err.Error())
+		err = errors.WithMessage(err, "failed to decode json")
+		return
 	}
-
-	return data, nil
-}
-
-func GetNewsByKeyword(parameter NewsSearchRequestParam) (Data, error) {
-	return def.GetNewsByKeyword(parameter)
-}
-
-func GetTopNews(parameter TopNewsRequestParam) (Data, error) {
-	return def.GetTopNews(parameter)
-}
-
-func GetNewsByTopic(parameter NewsTopicRequestParam) (Data, error) {
-	return def.GetNewsByTopic(parameter)
+	return
 }

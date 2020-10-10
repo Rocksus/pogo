@@ -10,7 +10,6 @@ import (
 	"github.com/Rocksus/pogo/internal/utils/logging"
 	"github.com/Rocksus/pogo/pkg/plugin"
 	"github.com/Rocksus/pogo/pkg/plugin/joke"
-	"github.com/Rocksus/pogo/pkg/plugin/news"
 	"github.com/Rocksus/pogo/pkg/plugin/weather"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"github.com/nickylogan/go-log"
@@ -30,7 +29,6 @@ func main() {
 
 	config := configs.New()
 
-	news.Init(config.News)
 	weatherPlugin := weather.InitPlugin(config.Weather.APIKey)
 	jokePlugin := joke.InitPlugin()
 
