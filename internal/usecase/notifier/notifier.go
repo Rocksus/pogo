@@ -7,7 +7,7 @@ import (
 
 	"github.com/Rocksus/pogo/internal/repositories/pushnotif"
 	"github.com/Rocksus/pogo/internal/repositories/user"
-	"github.com/Rocksus/pogo/internal/utils/stringformat"
+	"github.com/Rocksus/pogo/internal/utils/stringutil"
 	"github.com/Rocksus/pogo/pkg/plugin"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"github.com/nickylogan/go-log"
@@ -63,7 +63,7 @@ func (n *notifier) createGreeting(ctx context.Context, userID string) linebot.Se
 		return linebot.NewTextMessage(helloNoUser)
 	}
 
-	return linebot.NewTextMessage(fmt.Sprintf(helloUser, stringformat.GetFirstWord(profile.Name)))
+	return linebot.NewTextMessage(fmt.Sprintf(helloUser, stringutil.GetFirstWord(profile.Name)))
 }
 
 func randomHello() (withUser, noUser string) {
