@@ -8,7 +8,7 @@ import (
 	"github.com/Rocksus/pogo/internal/repositories/pushnotif"
 	"github.com/Rocksus/pogo/internal/repositories/user"
 	"github.com/Rocksus/pogo/internal/utils/stringformat"
-	"github.com/Rocksus/pogo/pkg/plugin/news"
+	"github.com/Rocksus/pogo/pkg/plugin"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"github.com/nickylogan/go-log"
 )
@@ -20,10 +20,15 @@ type Notifier interface {
 type notifier struct {
 	pushNotifier pushnotif.Notifier
 	userRepo     user.Repository
+	plugins      []plugin.DailyNotifier
 }
 
-func New(pushNotifier pushnotif.Notifier, userRepo user.Repository) Notifier {
-	return &notifier{pushNotifier: pushNotifier, userRepo: userRepo}
+func New(pushNotifier pushnotif.Notifier, userRepo user.Repository, plugins []plugin.DailyNotifier) Notifier {
+	return &notifier{
+		pushNotifier: pushNotifier,
+		userRepo:     userRepo,
+		plugins:      plugins,
+	}
 }
 
 func (n *notifier) PushDaily(ctx context.Context) (err error) {
@@ -32,28 +37,20 @@ func (n *notifier) PushDaily(ctx context.Context) (err error) {
 	return
 }
 
-// TODO: refactor to use repo
 func (n *notifier) sendMessage(ctx context.Context, userID string) {
 	var messages []linebot.SendingMessage
 	messages = append(messages, n.createGreeting(ctx, userID))
 
-	// TODO: use plugins
-	newsExist := true
-
-	newsData, err := news.GetTopNews(news.TopNewsRequestParam{Max: 3})
-	if err != nil {
-		newsExist = false
-		log.WithError(err).Errorln("Failed to get news data")
-	}
-	if newsExist {
-		newsText := fmt.Sprintf("Top news for today:\n")
-		for _, v := range newsData.Articles {
-			newsText = fmt.Sprintf("%s\n%s: %s\n%s", newsText, v.Source.Name, v.Title, v.URL)
+	for _, p := range n.plugins {
+		msg, err := p.GetDaily(ctx, userID)
+		if err != nil {
+			log.WithError(err).Errorln("failed to get daily")
+			continue
 		}
-		messages = append(messages, linebot.NewTextMessage(newsText))
+		messages = append(messages, msg)
 	}
 
-	err = n.pushNotifier.PushMessages(ctx, userID, messages...)
+	err := n.pushNotifier.PushMessages(ctx, userID, messages...)
 	if err != nil {
 		log.WithError(err).WithField("userID", userID).Errorln("failed to push message")
 	}
