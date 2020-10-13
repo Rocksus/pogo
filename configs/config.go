@@ -9,8 +9,8 @@ func New() *Config {
 	return &Config{
 		Chat: ChatConfig{
 			MasterID:           getEnv("MASTER_ID", ""),
-			ChannelAccessToken: getEnv("ACCESS_TOKEN", ""),
-			ChannelSecret:      getEnv("CHANNEL_SECRET", ""),
+			ChannelAccessToken: getEnv("LINE_ACCESS_TOKEN", ""),
+			ChannelSecret:      getEnv("LINE_CHANNEL_SECRET", ""),
 		},
 		Interpretor: InterpretorConfig{
 			Token: getEnv("WIT_TOKEN_KEY", ""),

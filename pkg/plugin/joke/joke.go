@@ -4,58 +4,84 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	"math/rand"
 	"net/http"
 	"time"
+
+	"github.com/Rocksus/pogo/pkg/plugin"
+	"github.com/line/line-bot-sdk-go/linebot"
+	"github.com/pkg/errors"
 )
 
-var def Repository
-
-type Repository interface {
-	GetRandomJoke() (Data, error)
-	GetRandomJokeByCategory(category string) (Data, error)
-	GetJokeByID(id int64) (Data, error)
+type Plugin struct {
+	client *http.Client
 }
 
-func Init() {
-	newRepo := &jokeRepo{}
-	def = newRepo
-	log.Print("[Joke][Init] Joke module initialized successfully.")
+func InitPlugin() *Plugin {
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+	return &Plugin{
+		client: client,
+	}
 }
 
-func (j *jokeRepo) GetRandomJoke() (Data, error) {
-	var data Data
+func (p *Plugin) Reply(ctx context.Context, message plugin.Message, replyCh chan<- linebot.SendingMessage) {
+	joke, err := p.getRandomJoke(ctx)
+	if err != nil {
+		replyCh <- p.getDefaultMessage()
+		return
+	}
+
+	replyCh <- linebot.NewTextMessage(joke.Setup)
+	time.Sleep(2 * time.Second)
+	replyCh <- linebot.NewTextMessage(joke.Punchline)
+}
+
+func (p *Plugin) getRandomJoke(ctx context.Context) (data Data, err error) {
 	requestURL := fmt.Sprintf("%s/jokes", apiURL)
 
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		return data, fmt.Errorf("Module Internal Error, %s", err.Error())
+		err = errors.WithMessage(err, "failed to create request")
+		return
 	}
-	client := &http.Client{}
-	rctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
-	defer cancel()
+	req = req.WithContext(ctx)
 
-	req = req.WithContext(rctx)
-
-	resp, err := client.Do(req)
+	resp, err := p.client.Do(req)
 	if err != nil {
-		return data, fmt.Errorf("Module Internal Error, %s", err.Error())
+		err = errors.WithMessage(err, "failed to do request")
+		return
 	}
 	defer resp.Body.Close()
 
 	err = json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
-		return data, fmt.Errorf("Module Internal Error, %s", err.Error())
+		err = errors.WithMessage(err, "failed to decode json")
+		return
 	}
 	if data.Response != 200 {
-		return data, fmt.Errorf("API Error, %s", data.Error)
+		err = errors.WithMessage(errors.New(data.Error), "api error")
+		return
 	}
 
 	return data, nil
-
 }
 
-func (j *jokeRepo) GetRandomJokeByCategory(category string) (Data, error) {
+func (p *Plugin) getDefaultMessage() linebot.SendingMessage {
+	defaults := []string{
+		"Boo hoo, I ran out of funny juice.",
+		"I can't come up with a joke.",
+		"I'm sorry, I'm not funny :(. Come back later when I can think of a good one",
+		"Knock knock? My joke machine is broken.",
+		"Jokes are not in my dictionary. I need to update my dictionary stats.",
+	}
+
+	i := rand.Intn(len(defaults))
+	return linebot.NewTextMessage(defaults[i])
+}
+
+func (p *Plugin) getRandomJokeByCategory(ctx context.Context, category string) (Data, error) {
 	var data Data
 	requestURL := fmt.Sprintf("%s/jokes/%s", apiURL, category)
 
@@ -87,7 +113,7 @@ func (j *jokeRepo) GetRandomJokeByCategory(category string) (Data, error) {
 
 }
 
-func (j *jokeRepo) GetJokeByID(id int64) (Data, error) {
+func (p *Plugin) getJokeByID(id int64) (Data, error) {
 	var data Data
 	requestURL := fmt.Sprintf("%s/joke/%d", apiURL, id)
 
@@ -117,16 +143,4 @@ func (j *jokeRepo) GetJokeByID(id int64) (Data, error) {
 
 	return data, nil
 
-}
-
-func GetRandomJoke() (Data, error) {
-	return def.GetRandomJoke()
-}
-
-func GetRandomJokeByCategory(category string) (Data, error) {
-	return def.GetRandomJokeByCategory(category)
-}
-
-func GetJokeByID(id int64) (Data, error) {
-	return def.GetJokeByID(id)
 }

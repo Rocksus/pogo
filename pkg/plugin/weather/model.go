@@ -10,10 +10,6 @@ var locationIDs = map[string]int64{
 	"banten":    1923045,
 }
 
-type weatherRepo struct {
-	APIKey string
-}
-
 type Data struct {
 	Response      int                  `json:"cod"`
 	Message       string               `json:"message"`

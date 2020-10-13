@@ -1,42 +1,49 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"time"
 
-	"github.com/Rocksus/pogo/internal/modules/joke"
-	"github.com/Rocksus/pogo/internal/modules/news"
-	"github.com/Rocksus/pogo/internal/modules/weather"
-	"github.com/Rocksus/pogo/internal/repositories/chat"
-	"github.com/Rocksus/pogo/internal/repositories/interpretor"
+	"github.com/Rocksus/pogo/internal/controllers/linehttp"
+	"github.com/Rocksus/pogo/internal/repositories/interpreter/witai"
+	"github.com/Rocksus/pogo/internal/usecase/replier"
 	"github.com/Rocksus/pogo/internal/utils/logging"
+	"github.com/Rocksus/pogo/pkg/plugin"
+	"github.com/Rocksus/pogo/pkg/plugin/joke"
+	"github.com/Rocksus/pogo/pkg/plugin/weather"
+	"github.com/line/line-bot-sdk-go/linebot"
+	"github.com/nickylogan/go-log"
 
 	"github.com/Rocksus/pogo/configs"
 	"github.com/joho/godotenv"
 )
 
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("[init cmd] environment file not found.")
-	} else {
-		log.Print("[init cmd] successfully loaded environment files.")
-	}
-}
-
 func main() {
+	log.Init(log.WithLevel(log.DebugLevel))
+
+	if err := godotenv.Load(); err != nil {
+		log.Fatalln("environment file not found")
+	}
+
+	log.Infoln("successfully loaded environment files")
+
 	config := configs.New()
 
-	weather.Init(config.Weather)
-	news.Init(config.News)
-	joke.Init()
+	weatherPlugin := weather.InitPlugin(config.Weather.APIKey)
+	jokePlugin := joke.InitPlugin()
 
-	interpretor := interpretor.InitInterpretorRepository(config.Interpretor)
+	bot, err := linebot.New(config.Chat.ChannelSecret, config.Chat.ChannelAccessToken)
+	if err != nil {
+		log.WithError(err).Fatalln("failed to create linebot client")
+	}
 
-	chatbot := chat.InitChatRepository(config.Chat, interpretor)
-	handler := logging.Middleware(chatbot.GetHandler())
-
-	http.HandleFunc("/callback", handler)
+	interpreter := witai.NewInterpreter(config.Interpretor)
+	replier := replier.NewMessageReplier(interpreter, map[string]plugin.MessageReplier{
+		"tellJoke":             jokePlugin,
+		"weather/checkWeather": weatherPlugin,
+	})
+	controller := linehttp.NewController(bot, replier)
+	http.HandleFunc("/callback", logging.Middleware(controller.HandleWebhook))
 
 	srv := &http.Server{
 		Handler:      http.DefaultServeMux,
@@ -45,8 +52,8 @@ func main() {
 		ReadTimeout:  5 * time.Second,
 	}
 
-	log.Printf("Listening on port %s\n", config.Port)
+	log.Infof("Listening on port %s", config.Port)
 	if err := srv.ListenAndServe(); err != nil {
-		log.Fatalf("[Init]Fail to start serving port %s, err: %v", config.Port, err)
+		log.WithError(err).Fatalf("Failed to start serving port %s", config.Port)
 	}
 }

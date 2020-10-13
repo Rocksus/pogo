@@ -1,4 +1,4 @@
-package stringformat
+package stringutil
 
 import "strings"
 

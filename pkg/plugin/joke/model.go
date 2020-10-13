@@ -14,6 +14,3 @@ type Data struct {
 	Response  int    `json:"status"`
 	Error     string `json:"error"`
 }
-
-type jokeRepo struct {
-}
