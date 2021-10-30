@@ -8,6 +8,8 @@ type Config struct {
 	KeyFile     string
 	Weather     WeatherConfig
 	News        NewsConfig
+	Google      GoogleConfig
+	MoneySheets MoneySheetsConfig
 }
 
 type ChatConfig struct {
@@ -26,4 +28,14 @@ type WeatherConfig struct {
 
 type NewsConfig struct {
 	APIKey string
+}
+
+type GoogleConfig struct {
+	ClientID     string
+	ClientSecret string
+	Credentials  string
+}
+
+type MoneySheetsConfig struct {
+	SheetID string
 }

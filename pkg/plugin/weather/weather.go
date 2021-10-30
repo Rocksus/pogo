@@ -8,10 +8,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Rocksus/pogo/pkg/plugin"
-	"github.com/line/line-bot-sdk-go/linebot"
+	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"github.com/nickylogan/go-log"
 	"github.com/pkg/errors"
+
+	"github.com/Rocksus/pogo/pkg/plugin"
 )
 
 type Plugin struct {

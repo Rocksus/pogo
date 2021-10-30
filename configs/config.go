@@ -8,7 +8,7 @@ import (
 func New() *Config {
 	return &Config{
 		Chat: ChatConfig{
-			MasterID:           getEnv("MASTER_ID", ""),
+			MasterID:           getEnv("LINE_MASTER_ID", ""),
 			ChannelAccessToken: getEnv("LINE_ACCESS_TOKEN", ""),
 			ChannelSecret:      getEnv("LINE_CHANNEL_SECRET", ""),
 		},
@@ -23,6 +23,14 @@ func New() *Config {
 		},
 		News: NewsConfig{
 			APIKey: getEnv("NEWS_API_KEY", ""),
+		},
+		Google: GoogleConfig{
+			ClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
+			ClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
+			Credentials:  getEnv("GOOGLE_CREDENTIALS", ""),
+		},
+		MoneySheets: MoneySheetsConfig{
+			SheetID: getEnv("MONEYSHEETS_SHEET_ID", ""),
 		},
 	}
 }

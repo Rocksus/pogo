@@ -6,10 +6,11 @@ import (
 	"reflect"
 	"sort"
 
+	"github.com/line/line-bot-sdk-go/v7/linebot"
+	"github.com/nickylogan/go-log"
+
 	"github.com/Rocksus/pogo/internal/repositories/interpreter"
 	"github.com/Rocksus/pogo/pkg/plugin"
-	"github.com/line/line-bot-sdk-go/linebot"
-	"github.com/nickylogan/go-log"
 )
 
 type MessageReplier interface {
