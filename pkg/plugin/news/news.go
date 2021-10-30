@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/line/line-bot-sdk-go/linebot"
+	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"github.com/nickylogan/go-log"
 	"github.com/pkg/errors"
 )

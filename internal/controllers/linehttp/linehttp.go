@@ -4,9 +4,10 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/Rocksus/pogo/internal/usecase/replier"
-	"github.com/line/line-bot-sdk-go/linebot"
+	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"github.com/nickylogan/go-log"
+
+	"github.com/Rocksus/pogo/internal/usecase/replier"
 )
 
 type Controller struct {

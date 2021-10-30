@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"math/rand"
 
+	"github.com/line/line-bot-sdk-go/v7/linebot"
+	"github.com/nickylogan/go-log"
+
 	"github.com/Rocksus/pogo/internal/repositories/pushnotif"
 	"github.com/Rocksus/pogo/internal/repositories/user"
 	"github.com/Rocksus/pogo/internal/utils/stringutil"
 	"github.com/Rocksus/pogo/pkg/plugin"
-	"github.com/line/line-bot-sdk-go/linebot"
-	"github.com/nickylogan/go-log"
 )
 
 type Notifier interface {
