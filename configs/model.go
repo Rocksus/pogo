@@ -34,6 +34,7 @@ type GoogleConfig struct {
 	ClientID     string
 	ClientSecret string
 	Credentials  string
+	Token string
 }
 
 type MoneySheetsConfig struct {

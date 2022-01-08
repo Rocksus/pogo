@@ -28,6 +28,7 @@ func New() *Config {
 			ClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
 			ClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
 			Credentials:  getEnv("GOOGLE_CREDENTIALS", ""),
+			Token:        getEnv("GOOGLE_TOKEN", ""),
 		},
 		MoneySheets: MoneySheetsConfig{
 			SheetID: getEnv("MONEYSHEETS_SHEET_ID", ""),
