@@ -3,6 +3,7 @@ package gauth
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -37,7 +38,7 @@ func New(cfg configs.GoogleConfig, scopes ...ScopeOption) (GoogleAuth, error) {
 	if err != nil {
 		return nil, err
 	}
-	client, err := getClient(config)
+	client, err := getClient(config, cfg.Token)
 	if err != nil {
 		return nil, err
 	}
@@ -53,18 +54,14 @@ func (g *gAuth) GetClient() *http.Client {
 }
 
 // Retrieve a token, saves the token, then returns the generated client.
-func getClient(config *oauth2.Config) (*http.Client, error) {
-	// The file token.json stores the user's access and refresh tokens, and is
-	// created automatically when the authorization flow completes for the first
-	// time.
-	tokFile := "token.json"
-	tok, err := tokenFromFile(tokFile)
+func getClient(config *oauth2.Config, token string) (*http.Client, error) {
+	tok, err := tokenFromString(token)
 	if err != nil {
 		tok, err = getTokenFromWeb(config)
 		if err != nil {
 			return nil, err
 		}
-		if err := saveToken(tokFile, tok); err != nil {
+		if err := saveToken("token.json", tok); err != nil {
 			log.WithError(err).Errorln("Unable to save token")
 		}
 	}
@@ -92,14 +89,12 @@ func getTokenFromWeb(config *oauth2.Config) (*oauth2.Token, error) {
 }
 
 // Retrieves a token from a local file.
-func tokenFromFile(file string) (*oauth2.Token, error) {
-	f, err := os.Open(file)
-	if err != nil {
-		return nil, err
+func tokenFromString(tokenString string) (*oauth2.Token, error) {
+	if tokenString == "" {
+		return nil, errors.New("no token")
 	}
-	defer f.Close()
 	tok := &oauth2.Token{}
-	err = json.NewDecoder(f).Decode(tok)
+	err := json.Unmarshal([]byte(tokenString), tok)
 	return tok, err
 }
 
