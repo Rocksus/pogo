@@ -35,6 +35,8 @@ func (atr checkBalanceReplier) Reply(ctx context.Context, message plugin.Message
 	replyCh <- linebot.NewTextMessage(responseMsg)
 }
 
-func (p *Plugin) CheckBalance(ctx context.Context, balanceType string) (int64, error) {
-	return 0, nil
+func (p *Plugin) GetBalanceChecker() plugin.MessageReplier {
+	return &checkBalanceReplier{
+		p: p,
+	}
 }
