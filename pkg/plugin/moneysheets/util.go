@@ -1,9 +1,8 @@
 package moneysheets
 
-func processRawAmount(rawAmt string) (int64, error) {
-	return 0, nil
-}
+import "strconv"
 
-func formatAmount(amt int64) string {
-	return ""
+func formatAmount(amt float64) string {
+	// TODO: adjust currency
+	return "Rp." + strconv.FormatFloat(amt, 'f', 2, 64)
 }
