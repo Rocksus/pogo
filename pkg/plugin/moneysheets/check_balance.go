@@ -20,9 +20,9 @@ func (atr checkBalanceReplier) Reply(ctx context.Context, message plugin.Message
 		balanceType = "Unknown"
 	)
 
-	if balanceTypeRaw, ok := message.Entities["financialPlanning_balanceAccount"]; ok {
-		if balanceTypeParsed, ook := balanceTypeRaw.(string); ook {
-			balanceType = balanceTypeParsed
+	if balanceTypeEntityRaw, ok := message.Entities["financialPlanning_balanceAccount"]; ok {
+		if balanceTypeEntity, ook := balanceTypeEntityRaw.(map[string]interface{}); ook {
+			balanceType = balanceTypeEntity["value"].(string)
 		}
 	}
 
