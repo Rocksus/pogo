@@ -22,29 +22,37 @@ func (atr addSpendingReplier) Reply(ctx context.Context, message plugin.Message,
 	)
 
 	if balanceAccountEntityRaw, ok := message.Entities["financialPlanning_balanceAccount"]; ok {
-		if balanceAccountEntity, ook := balanceAccountEntityRaw.(map[string]interface{}); ook {
-			balanceType, _ = balanceAccountEntity["value"].(string)
+		if balanceAccountEntity, ook := balanceAccountEntityRaw.([]interface{}); ook && len(balanceAccountEntity) > 0 {
+			if balanceAccountEntityMap, oook := balanceAccountEntity[0].(map[string]interface{}); oook {
+				balanceType, _ = balanceAccountEntityMap["value"].(string)
+			}
 		}
 	}
 
 	if balanceCategoryEntityRaw, ok := message.Entities["financialPlanning_category"]; ok {
-		if balanceCategoryEntity, ook := balanceCategoryEntityRaw.(map[string]interface{}); ook {
-			category, _ = balanceCategoryEntity["value"].(string)
+		if balanceCategoryEntity, ook := balanceCategoryEntityRaw.([]interface{}); ook && len(balanceCategoryEntity) > 0 {
+			if balanceCategoryEntityMap, oook := balanceCategoryEntity[0].(map[string]interface{}); oook {
+				category, _ = balanceCategoryEntityMap["value"].(string)
+			}
 		}
 	}
 
 	if amountOfMoneyEntityRaw, ok := message.Entities["amount_of_money"]; ok {
-		if amountOfMoneyEntity, ook := amountOfMoneyEntityRaw.(map[string]interface{}); ook {
-			// currency unit is currently not used
-			amount, _ = amountOfMoneyEntity["value"].(float64)
+		if amountOfMoneyEntity, ook := amountOfMoneyEntityRaw.([]interface{}); ook && len(amountOfMoneyEntity) > 0 {
+			if amountOfMoneyEntityMap, oook := amountOfMoneyEntity[0].(map[string]interface{}); oook {
+				// currency unit is currently not used
+				amount, _ = amountOfMoneyEntityMap["value"].(float64)
+			}
 		}
 	}
 
 	// maybe the number is classified as number
 	if amount == 0 {
 		if amountNumberEntityRaw, ok := message.Entities["number"]; ok {
-			if amountNumberEntity, ook := amountNumberEntityRaw.(map[string]interface{}); ook {
-				amount, _ = amountNumberEntity["value"].(float64)
+			if amountNumberEntity, ook := amountNumberEntityRaw.([]interface{}); ook && len(amountNumberEntity) > 0 {
+				if amountNumberEntityMap, oook := amountNumberEntity[0].(map[string]interface{}); oook {
+					amount, _ = amountNumberEntityMap["value"].(float64)
+				}
 			}
 		}
 	}
